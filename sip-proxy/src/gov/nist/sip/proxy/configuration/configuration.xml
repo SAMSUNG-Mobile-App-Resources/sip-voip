@@ -2,7 +2,7 @@
 <CONFIGURATION> 
 	<SIP_STACK 
 stack_name="nist-proxy"
-stack_IP_address="192.168.1.3"
+stack_IP_address="147.102.238.137"
 router_path="gov.nist.sip.proxy.router.ProxyRouter"
 max_connections="20"
 thread_pool_size="20"
@@ -15,7 +15,7 @@ thread_pool_size="20"
 <DOMAIN domain="ubi.com" />
 <DOMAIN domain="hotmail.com" />
 <DOMAIN domain="nist.gov" />
-<DOMAIN domain="nitrogen.epact.se" />
+<DOMAIN domain="nitrogen.epact.se" ></DOMAIN>
 </SIP_STACK>
 
 <REGISTRAR
