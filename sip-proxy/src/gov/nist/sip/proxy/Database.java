@@ -1,6 +1,9 @@
 package gov.nist.sip.proxy;
 
 import java.util.Vector;
+
+import javax.sip.address.URI;
+
 import java.util.HashMap;
 
 enum Policy {
@@ -12,6 +15,7 @@ enum Action {
 }
 
 class UserInfo {
+	URI uri;
     String username;
     String pass;
     String forwardTarget;
@@ -25,8 +29,14 @@ class UserInfo {
         this.pass = pass;
         this.billingPolicy = billingPolicy;
         this.address = address;
+        forwardTarget = null;
+        uri = null;
         blockedUsers = new Vector<String>();
         balance = 50.0;
+    }
+    
+    URI GetUserURI(){
+    	return uri;
     }
 
     String GetUserName() {
@@ -86,6 +96,10 @@ class UserInfo {
 
 public class Database {
     HashMap<String, UserInfo> activeDatabase;
+    
+    Database(){
+    	activeDatabase = new HashMap<String, UserInfo>();
+    }
 
     boolean InsertUser(UserInfo user) {
         String key = user.GetUserName();
@@ -110,7 +124,7 @@ public class Database {
 
         return true;
     }
-
+    
     boolean Update(Action action, String user, String optUser, double balance) {
         UserInfo v;
 
@@ -165,5 +179,49 @@ public class Database {
         }
 
         return true;
+    }
+    
+    public URI resolveForward(String source, String target){
+    	//TODO : Resolve the cyclic forwarding.
+    	String prev, curr;
+    	UserInfo v;
+    	
+    	v = activeDatabase.get(target);
+    	Vector<String> Blocked = v.GetBlockedUsers();
+    	
+    	if(v.forwardTarget == null){
+    		if(Blocked.contains(source)){
+    			return null;
+    		}
+    		else{
+    			return v.uri;
+    		}
+    	}
+    	
+    	else{
+    		prev = target;
+    		v = activeDatabase.get(v.forwardTarget);
+    		curr = v.forwardTarget;
+    		Blocked = v.GetBlockedUsers();
+    		
+    		while(v.forwardTarget != null){
+    				
+    			if(Blocked.contains(source) || Blocked.contains(prev)){
+    	    		return null;
+    	    	}
+    	    
+    			prev = curr;
+        		v = activeDatabase.get(v.forwardTarget);
+        		curr = v.forwardTarget;
+        		Blocked = v.GetBlockedUsers();		
+    		}
+    		
+    		if(!Blocked.contains(source) && !Blocked.contains(prev)){
+    			return v.uri;
+    		}
+    			
+    	}
+    	
+    	return null;
     }
 }

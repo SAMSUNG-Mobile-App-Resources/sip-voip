@@ -54,6 +54,7 @@ public class Proxy implements SipListener  {
     protected Authentication authentication;
     protected RequestForwarding requestForwarding;
     protected ResponseForwarding responseForwarding;
+    protected Database database;
 
 
     public RequestForwarding getRequestForwarding() {
@@ -148,6 +149,7 @@ public class Proxy implements SipListener  {
                     registrar=new Registrar(this);
                     requestForwarding=new RequestForwarding(this);
                     responseForwarding=new ResponseForwarding(this);
+                    database = new Database();
                 }
             }
             catch (Exception ex) {
@@ -565,11 +567,7 @@ public class Proxy implements SipListener  {
                 }
                 return;
             }
-
-
-
-
-
+            
             // Forward to next hop but dont reply OK right away for the
             // BYE. Bye is end-to-end not hop by hop!
             if (request.getMethod().equals(Request.BYE) ) {
@@ -635,23 +633,45 @@ public class Proxy implements SipListener  {
                     requestSipURI.removeParameter(name);
                 }
             }
-
-
-
-            if ( registrar.hasRegistration(request)  ) {
-
-                targetURIList=registrar.getContactsURI(request);
+            if (registrar.hasRegistration(request)) {
+            	//TODO : resolve the forwarding by polling in database.
+                targetURIList = registrar.getContactsURI(request);
 
                 // We fork only INVITE
-                if (targetURIList!=null && targetURIList.size()>1
+                if (targetURIList!= null && targetURIList.size()>1
                         && !request.getMethod().equals("INVITE") ) {
                     if (ProxyDebug.debug)
                         ProxyDebug.println
                             ("Proxy, processRequest(), the request "+
                              " to fork is not an INVITE, so we will process"+
                              " it with the first target as the only target.");
-                    targetURI= (URI)targetURIList.firstElement();
-                    targetURIList=new Vector();
+                    targetURI = (URI)targetURIList.firstElement();
+                    
+                    /*Resolve Forward.
+                    String temp, tUserName, sUserName;
+                    String [] tURI;
+                    String [] sURI;
+                    
+                    temp = targetURI.toString();
+                    tURI = temp.split(":");
+                    tUserName = tURI[0];
+                    
+                    temp = requestURI.toString();
+                    sURI = temp.split(":");
+                    sUserName = sURI[0];
+                    
+                    URI finalURI = database.resolveForward(sUserName, tUserName);
+                    if(finalURI == null){
+                    	tros poulo
+                    }
+                    else{
+                    	targetURIList = new Vector();
+                    	targetURIList.addElement(targetURI);
+                    	requestForwarding.forwardRequest(targetURIList,sipProvider,
+                            request,serverTransaction,true);
+                    }
+                    */
+                    targetURIList = new Vector();
                     targetURIList.addElement(targetURI);
                     // 4. Forward the request statefully to the target:
                     requestForwarding.forwardRequest(targetURIList,sipProvider,
