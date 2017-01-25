@@ -798,7 +798,6 @@ public class SipCommunicator
                                              defaultValues.getPassword());
 
             UserCredentials credentials = new UserCredentials();
-
             credentials.setUserName(guiManager.getAuthenticationUserName());
             credentials.setPassword(guiManager.getAuthenticationPassword());
 

@@ -130,11 +130,14 @@ public class AuthenticationSplash
     /**
      * Creates new form AuthenticationSplash
      */
+    
+    private Frame globalParent;
+    
     public AuthenticationSplash(Frame parent, boolean modal)
     {
     	super(parent, modal);
     	initResources();
-    	initComponents();
+    	initComponents(parent);
     	pack();
     	centerWindow();
     }
@@ -186,7 +189,7 @@ public class AuthenticationSplash
      * to provide much more useful information to the user.
      */
     
-    private void initComponents()
+    private void initComponents(Frame parent)
     {
         Container contents = getContentPane();
         contents.setLayout(new BorderLayout());
@@ -202,7 +205,7 @@ public class AuthenticationSplash
         {
             public void windowClosing(WindowEvent event)
             {
-                dialogDone(CMD_CANCEL);
+                dialogDone(CMD_CANCEL, parent);
             }
         });
 
@@ -347,7 +350,7 @@ public class AuthenticationSplash
         {
             public void actionPerformed(ActionEvent event)
             {
-                dialogDone(event);
+                dialogDone(event, parent);
             }
         });
         buttonPanel.add(loginButton);
@@ -363,7 +366,7 @@ public class AuthenticationSplash
         {
             public void actionPerformed(ActionEvent event)
             {
-                dialogDone(event);
+                dialogDone(event, parent);
             }
         });
         buttonPanel.add(registerButton);
@@ -377,7 +380,7 @@ public class AuthenticationSplash
         {
             public void actionPerformed(ActionEvent event)
             {
-                dialogDone(event);
+                dialogDone(event, parent);
             }
         });
         buttonPanel.add(cancelButton);
@@ -453,7 +456,7 @@ public class AuthenticationSplash
      * @param actionCommand may be null
      */
     
-    private void dialogDone(Object actionCommand)
+    private void dialogDone(Object actionCommand, Frame parent)
     {
         String cmd = null;
         if (actionCommand != null) {
@@ -472,36 +475,16 @@ public class AuthenticationSplash
             password = null;
         }
         else if (cmd.equals(CMD_REGISTER)) {
-        	//setVisible(false);
-        	dispose();
-        	
-        	JFrame frame = new JFrame()
-            {
-                public Dimension getPreferredSize()
-                {
-                    return new Dimension(500, 300);
-                }
-            };
-            frame.setTitle("Registration Splash");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.pack();
-            frame.setVisible(false);
-
-            RegistrationSplash dialog = new RegistrationSplash(frame, true);
-            dialog.addWindowListener(new WindowAdapter()
-            {
-                public void windowClosing(WindowEvent event)
-                {
-                    System.exit(0);
-                }
-
-                public void windowClosed(WindowEvent event)
-                {
-                    System.exit(0);
-                }
-            });
-            dialog.pack();
+            RegistrationSplash dialog = new RegistrationSplash(parent, true);
+            setSize(0, 0);
             dialog.setVisible(true);
+            
+            userName = dialog.userName;
+            password = dialog.password;
+            name = dialog.name;
+            lastName = dialog.lastName;
+            mail = dialog.mail;
+            policy = dialog.policy;
         }
         else if (cmd.equals(CMD_LOGIN)) {
             userName = userNameTextField.getText();
