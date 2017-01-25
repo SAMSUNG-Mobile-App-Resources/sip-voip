@@ -1,107 +1,43 @@
 package gov.nist.sip.proxy;
 
 import java.util.Vector;
-
 import javax.sip.address.URI;
-
 import java.util.HashMap;
 
-enum Policy {
-    POLICY_A, POLICY_B, POLICY_C
+enum ForwardingStatus {
+    FWDSTATUS_OK, FWDSTATUS_BLOCKED, FWDSTATUS_LOOP
+}
+
+class FwdRes {
+    private ForwardingStatus status;
+    private URI finalURI;
+
+    FwdRes(ForwardingStatus status, URI finalURI) {
+        this.status = status;
+        this.finalURI = finalURI;
+    }
+
+    ForwardingStatus GetStatus() {
+        return status;
+    }
+
+    URI GetURI() {
+        return finalURI;
+    }
 }
 
 enum Action {
     ACTION_BLOCK, ACTION_UNBLOCK, ACTION_FORWARD, ACTION_FRESET, ACTION_BALCHARGE, ACTION_BALINCR
 }
 
-class UserInfo {
-	URI uri;
-    String username;
-    String pass;
-    String forwardTarget;
-    String address;
-    Vector<String> blockedUsers;
-    Policy billingPolicy;
-    double balance;
-
-    UserInfo(String username, String pass, Policy billingPolicy, String address) {
-        this.username = username;
-        this.pass = pass;
-        this.billingPolicy = billingPolicy;
-        this.address = address;
-        forwardTarget = null;
-        uri = null;
-        blockedUsers = new Vector<String>();
-        balance = 50.0;
-    }
-    
-    URI GetUserURI(){
-    	return uri;
-    }
-
-    String GetUserName() {
-        return username;
-    }
-
-    Policy GetPolicy() {
-        return billingPolicy;
-    }
-
-    String GetPassword() {
-        return pass;
-    }
-
-    Vector<String> GetBlockedUsers() {
-        return blockedUsers;
-    }
-
-    String GetForwardTarget() {
-        return forwardTarget;
-    }
-
-    double GetBalance() {
-        return balance;
-    }
-
-    void AddToBlockedUsers(String userToBlock) {
-        if (!this.blockedUsers.contains(userToBlock))
-            this.blockedUsers.add(userToBlock);
-    }
-
-    void RemoveFromBlockedUsers(String blockedUser) {
-        if (this.blockedUsers.contains(blockedUser)) {
-            this.blockedUsers.remove(blockedUser);
-        }
-    }
-
-    void ForwardTo(String fwdTarget) {
-        this.forwardTarget = fwdTarget;
-    }
-
-    void ClearFwd() {
-        this.forwardTarget = null;
-    }
-
-    void UpdateBalance(double amount, Action action) {
-        switch (action) {
-            case ACTION_BALCHARGE:
-                this.balance += amount;
-                break;
-            case ACTION_BALINCR:
-                this.balance -= amount;
-                break;
-        }
-    }
-}
-
 public class Database {
-    HashMap<String, UserInfo> activeDatabase;
-    
-    Database(){
-    	activeDatabase = new HashMap<String, UserInfo>();
+    private HashMap<String, UserInfo> activeDatabase;
+
+    public Database(){
+        activeDatabase = new HashMap<String, UserInfo>();
     }
 
-    boolean InsertUser(UserInfo user) {
+    public boolean InsertUser(UserInfo user) {
         String key = user.GetUserName();
 
         if (activeDatabase.containsKey(key))
@@ -113,7 +49,7 @@ public class Database {
         return true;
     }
 
-    boolean Delete(String username) {
+    public boolean Delete(String username) {
         String key = username;
 
         if (!activeDatabase.containsKey(key)) {
@@ -124,8 +60,8 @@ public class Database {
 
         return true;
     }
-    
-    boolean Update(Action action, String user, String optUser, double balance) {
+
+    public boolean Update(Action action, String user, String optUser, double balance) {
         UserInfo v;
 
         if (!activeDatabase.containsKey(user)) {
@@ -136,7 +72,7 @@ public class Database {
 
         switch (action){
             case ACTION_BLOCK:
-                //NOTE: THA SOu GAMHSW AN DE DOULEUEI
+                //@NOTE: THA SOu GAMHSW AN DE DOULEUEI
                 if (optUser != null) {
                     if (activeDatabase.containsKey(optUser)) {
                         v.AddToBlockedUsers(optUser);
@@ -180,48 +116,44 @@ public class Database {
 
         return true;
     }
-    
-    public URI resolveForward(String source, String target){
-    	//TODO : Resolve the cyclic forwarding.
-    	String prev, curr;
-    	UserInfo v;
-    	
-    	v = activeDatabase.get(target);
-    	Vector<String> Blocked = v.GetBlockedUsers();
-    	
-    	if(v.forwardTarget == null){
-    		if(Blocked.contains(source)){
-    			return null;
-    		}
-    		else{
-    			return v.uri;
-    		}
-    	}
-    	
-    	else{
-    		prev = target;
-    		v = activeDatabase.get(v.forwardTarget);
-    		curr = v.forwardTarget;
-    		Blocked = v.GetBlockedUsers();
-    		
-    		while(v.forwardTarget != null){
-    				
-    			if(Blocked.contains(source) || Blocked.contains(prev)){
-    	    		return null;
-    	    	}
-    	    
-    			prev = curr;
-        		v = activeDatabase.get(v.forwardTarget);
-        		curr = v.forwardTarget;
-        		Blocked = v.GetBlockedUsers();		
-    		}
-    		
-    		if(!Blocked.contains(source) && !Blocked.contains(prev)){
-    			return v.uri;
-    		}
-    			
-    	}
-    	
-    	return null;
+
+    public FwdRes resolveForward(String source, String target){
+        Vector<String> intermediateTargets = new Vector<String>();
+        UserInfo v;
+
+        v = activeDatabase.get(target);
+        Vector<String> blocked = v.GetBlockedUsers();
+
+        if (v.GetForwardTarget() == null){
+            if(blocked.contains(source)) {
+                return new FwdRes(ForwardingStatus.FWDSTATUS_BLOCKED, null);
+                //return null;
+            }else {
+                return new FwdRes(ForwardingStatus.FWDSTATUS_OK, v.GetUserURI());
+                //return v.GetUserURI();
+            }
+        }else {
+            intermediateTargets.add(v.GetUserName());
+            v = activeDatabase.get(v.GetForwardTarget());
+
+            while (v.GetForwardTarget() != null) {
+                intermediateTargets.add(v.GetUserName());
+                v = activeDatabase.get(v.GetForwardTarget());
+
+                if (intermediateTargets.contains(v.GetUserName())) //cycle detected
+                    return new FwdRes(ForwardingStatus.FWDSTATUS_LOOP, null);
+                    //return null;
+            }
+
+            blocked = v.GetBlockedUsers();
+
+            if (!blocked.contains(source)) {
+                return new FwdRes(ForwardingStatus.FWDSTATUS_OK, v.GetUserURI());
+                //return v.GetUserURI();
+            }else
+                return new FwdRes(ForwardingStatus.FWDSTATUS_BLOCKED, null);
+        }
+
+        //return null;
     }
 }

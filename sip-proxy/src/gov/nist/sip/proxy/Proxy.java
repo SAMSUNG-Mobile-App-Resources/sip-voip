@@ -567,7 +567,7 @@ public class Proxy implements SipListener  {
                 }
                 return;
             }
-            
+
             // Forward to next hop but dont reply OK right away for the
             // BYE. Bye is end-to-end not hop by hop!
             if (request.getMethod().equals(Request.BYE) ) {
@@ -634,50 +634,65 @@ public class Proxy implements SipListener  {
                 }
             }
             if (registrar.hasRegistration(request)) {
-            	//TODO : resolve the forwarding by polling in database.
                 targetURIList = registrar.getContactsURI(request);
 
                 // We fork only INVITE
-                if (targetURIList!= null && targetURIList.size()>1
-                        && !request.getMethod().equals("INVITE") ) {
+                if (targetURIList!= null && targetURIList.size()>1 && !request.getMethod().equals("INVITE")) {
                     if (ProxyDebug.debug)
                         ProxyDebug.println
                             ("Proxy, processRequest(), the request "+
                              " to fork is not an INVITE, so we will process"+
                              " it with the first target as the only target.");
                     targetURI = (URI)targetURIList.firstElement();
-                    
-                    /*Resolve Forward.
+
+                    //Resolve Forward.
                     String temp, tUserName, sUserName;
                     String [] tURI;
                     String [] sURI;
-                    
+
                     temp = targetURI.toString();
-                    tURI = temp.split(":");
-                    tUserName = tURI[0];
-                    
+                    tURI = temp.split("@");
+                    tUserName = tURI[0].split(":")[0];
+
                     temp = requestURI.toString();
-                    sURI = temp.split(":");
-                    sUserName = sURI[0];
-                    
-                    URI finalURI = database.resolveForward(sUserName, tUserName);
-                    if(finalURI == null){
-                    	tros poulo
+                    sURI = temp.split("@");
+                    sUserName = sURI[0].split(":")[0];
+
+                    //URI finalURI = database.resolveForward(sUserName, tUserName);
+                    FwdRes fwdStatus = database.resolveForward(sUserName, tUserName);
+                    targetURI = fwdStatus.GetURI();
+
+                    if(targetURI == null) {
+                        int responseType;
+
+                        if (fwdStatus.GetStatus() == ForwardingStatus.FWDSTATUS_BLOCKED)
+                            responseType = Response.TEMPORARILY_UNAVAILABLE; //NOTE: maybe this should be "BUSY_HERE"?
+                        else
+                            responseType = Response.LOOP_DETECTED;
+
+                        Response response = messageFactory.createResponse(responseType, request);
+
+                        if (serverTransaction != null)
+                            serverTransaction.sendResponse(response);
+                        else
+                            sipProvider.sendResponse(response);
+
+                        //return;
+                    }else {
+                        targetURIList = new Vector();
+                        targetURIList.addElement(targetURI);
+                        requestForwarding.forwardRequest(targetURIList,sipProvider,
+                                request,serverTransaction,true);
+                        return;
                     }
-                    else{
-                    	targetURIList = new Vector();
-                    	targetURIList.addElement(targetURI);
-                    	requestForwarding.forwardRequest(targetURIList,sipProvider,
-                            request,serverTransaction,true);
-                    }
-                    */
-                    targetURIList = new Vector();
-                    targetURIList.addElement(targetURI);
+
+                    //targetURIList = new Vector();
+                    //targetURIList.addElement(targetURI);
                     // 4. Forward the request statefully to the target:
-                    requestForwarding.forwardRequest(targetURIList,sipProvider,
-                            request,serverTransaction,true);
+                    //requestForwarding.forwardRequest(targetURIList,sipProvider,
+                    //        request,serverTransaction,true);
                     return;
-                        }
+                }
 
                 if (targetURIList!=null && !targetURIList.isEmpty()) {
                     if (ProxyDebug.debug)
