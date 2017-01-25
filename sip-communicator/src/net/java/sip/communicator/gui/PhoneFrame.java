@@ -90,9 +90,15 @@ class PhoneFrame
     JPanel videoPane = new JPanel();
     BorderLayout borderLayout2 = new BorderLayout();
     JPanel callControlButtons = new JPanel();
+    
     JButton answerButton = new JButton();
     JButton hangupButton = new JButton();
-    GridLayout gridLayout1 = new GridLayout();
+    JButton forwardButton = new JButton();
+    JButton blockButton = new JButton();
+    JButton unforwardButton = new JButton();
+    JButton unblockButton = new JButton();
+    GridLayout gridLayout1 = new GridLayout(3, 2);
+    
     Border border6;
     Border border7;
     Border border8;
@@ -137,7 +143,8 @@ class PhoneFrame
         }
     }
 
-    private void jbInit() throws Exception
+    @SuppressWarnings("deprecation")
+	private void jbInit() throws Exception
     {
         titledBorder1 = new TitledBorder("");
         border1 = BorderFactory.createCompoundBorder(BorderFactory.
@@ -180,6 +187,24 @@ class PhoneFrame
         hangupButton.setEnabled(false);
         hangupButton.setMnemonic('H');
         hangupButton.setText("Hangup");
+        
+        
+        forwardButton.setEnabled(false);
+        forwardButton.setMnemonic('F');
+        forwardButton.setText("Forward");
+        
+        unforwardButton.setEnabled(false);
+        unforwardButton.setMnemonic('U');
+        unforwardButton.setText("Unforward");
+        
+        blockButton.setEnabled(false);
+        blockButton.setMnemonic('B');
+        blockButton.setText("Block");
+        
+        unblockButton.setEnabled(false);
+        unblockButton.setMnemonic('U');
+        unblockButton.setText("Unblock");
+        
         callControlButtons.setLayout(gridLayout1);
         gridLayout1.setHgap(10);
         gridLayout1.setVgap(10);
@@ -221,8 +246,15 @@ class PhoneFrame
         controlPanel.add(callControlButtons, BorderLayout.SOUTH);
         callControlButtons.add(answerButton, null);
         callControlButtons.add(hangupButton, null);
+        callControlButtons.add(forwardButton, null);
+        callControlButtons.add(unforwardButton, null);
+        callControlButtons.add(blockButton, null);
+        callControlButtons.add(unblockButton, null);
+       
+        
         controlPanel.add(participantsScroll,  BorderLayout.CENTER);
         participantsScroll.setViewportView(participantsTable);
+        
         statusPanel.add(registrationLabel, BorderLayout.WEST);
         statusPanel.add(registrationAddressLabel, BorderLayout.CENTER);
         this.getContentPane().add(dialPanel, BorderLayout.NORTH);

@@ -64,15 +64,27 @@ import javax.swing.*;
 import net.java.sip.communicator.common.*;
 import net.java.sip.communicator.common.Console;
 import net.java.sip.communicator.gui.event.*;
-import java.awt.SystemColor;
+
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import net.java.sip.communicator.gui.plaf.SipCommunicatorColorTheme;
-import java.awt.event.KeyEvent;
+
 import java.io.*;
 import net.java.sip.communicator.media.JMFRegistry;
 import net.java.sip.communicator.plugin.setup.*;
 import net.java.sip.communicator.gui.imp.*;
 import net.java.sip.communicator.sip.simple.event.*;
+
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JApplet;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JTextField;
+
 
 /**
  * <p>Title: SIP COMMUNICATOR</p>
@@ -180,11 +192,14 @@ public class GuiManager
         logoLabel.setIcon(new ImageIcon(Utils.getResource("sip-communicator.logo.thin.jpg")));
         logoPanel.add(logoLabel);
         logoPanel.setBackground(Color.white);
-
+        logoPanel.setPreferredSize(new Dimension(10,10));
+        
+        
         phoneFrame.videoPane.setBackground(Color.white);
         phoneFrame.videoPane.add(logoPanel);
         setGlobalStatus(NOT_REGISTERED, "");
         JOptionPane.setRootFrame(phoneFrame);
+        
     }
 
     private static void initLookAndFeel()
@@ -279,6 +294,10 @@ public class GuiManager
         phoneFrame.dialButton.setEnabled(enabled);
         phoneFrame.hangupButton.setEnabled(enabled);
         phoneFrame.answerButton.setEnabled(enabled);
+        phoneFrame.forwardButton.setEnabled(enabled);
+        phoneFrame.blockButton.setEnabled(enabled);
+        phoneFrame.unforwardButton.setEnabled(enabled);
+        phoneFrame.unblockButton.setEnabled(enabled);
     }
 
     public void addUserActionListener(UserActionListener l)
@@ -330,6 +349,27 @@ public class GuiManager
     }
 
 //----------------- Event dispatching------------------------
+    void forwardButton_actionPerformed(EventObject evt){
+    	System.out.println("NAAAAII");
+    	//ForwardSplash forwarding = new ForwardSplash();
+    	ForwardSplash.FwdS(300, 300);
+    }
+    
+    void unforwardButton_actionPerformed(EventObject evt){
+    	System.out.println("Axilleas");
+    	ForwardSplash.UFwdS(300, 300);
+    }
+    
+    void blockButton_actionPerformed(EventObject evt){
+    	System.out.println("Marialena");
+    	BlockSplash.Block(300, 300);
+    }
+    
+    void unblockButton_actionPerformed(EventObject evt){
+    	System.out.println("Fellopoulos");
+    	BlockSplash.Block(300, 300);
+    }
+    
     void dialButton_actionPerformed(EventObject evt)
     {
         //TODO temporarily close alerts from here.
@@ -555,8 +595,6 @@ public class GuiManager
             //configFrame.show();
         }
     }
-
-
     /*
         private class MediaChooserAction
             extends AbstractAction
@@ -622,6 +660,34 @@ public class GuiManager
                 answerButton_actionPerformed(evt);
             }
         });
+        phoneFrame.forwardButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent evt)
+            {
+                forwardButton_actionPerformed(evt);
+            }
+        });
+        phoneFrame.unforwardButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent evt)
+            {
+                unforwardButton_actionPerformed(evt);
+            }
+        });
+        phoneFrame.blockButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent evt)
+            {
+                blockButton_actionPerformed(evt);
+            }
+        });
+        phoneFrame.unblockButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent evt)
+            {
+                unblockButton_actionPerformed(evt);
+            }
+        });
         phoneFrame.hangupButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
@@ -674,7 +740,7 @@ public class GuiManager
         //Bug report by Steven Lass (sltemp at comcast.net)
         if(realm != null)
             authenticationSplash.realmValueLabel.setText(new String(realm));
-        authenticationSplash.show();
+        authenticationSplash.setVisible(true);
     }
 
     public String getAuthenticationUserName()
