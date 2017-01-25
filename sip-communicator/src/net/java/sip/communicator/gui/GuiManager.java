@@ -177,7 +177,7 @@ public class GuiManager
         JLabel logoLabel = new JLabel();
 
 //        logoLabel.setIcon(new ImageIcon(Utils.getResource("sip-communicator.jpg")));
-        logoLabel.setIcon(new ImageIcon(Utils.getResource("phone-icon-928.jpg")));
+        logoLabel.setIcon(new ImageIcon(Utils.getResource("sip-communicator.logo.thin.jpg")));
         logoPanel.add(logoLabel);
         logoPanel.setBackground(Color.white);
 
