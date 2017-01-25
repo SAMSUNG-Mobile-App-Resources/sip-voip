@@ -32,8 +32,8 @@
         <sip>
             <PUBLIC_ADDRESS value="sip:user"/>
             <TRANSPORT value=""/>
-            <REGISTRAR_ADDRESS value="192.168.1.3:4000"/>
-            <USER_NAME value="user"/>
+            <REGISTRAR_ADDRESS value="147.102.237.160:4000"/>
+            <USER_NAME value="413414"/>
             <STACK_PATH value="gov.nist"/>
             <PREFERRED_LOCAL_PORT value="5060"/>
             <DISPLAY_NAME value="user"/>
@@ -41,8 +41,8 @@
             <REGISTRATIONS_EXPIRATION value="3600"/>
             <REGISTRAR_PORT value="5061"/>
 
-            <DEFAULT_DOMAIN_NAME value="192.168.1.3:4000"/>
-            <DEFAULT_AUTHENTICATION_REALM value="192.168.1.3:4000"/>
+            <DEFAULT_DOMAIN_NAME value="147.102.237.160:4000"/>
+            <DEFAULT_AUTHENTICATION_REALM value="147.102.237.160:4000"/>
             <WAIT_UNREGISTGRATION_FOR value="1100"/>
             <SAME_USER_EVERYWHERE value="true"/>
             <simple>
@@ -62,18 +62,32 @@
             <MY_SIPPHONE_URL value="http://my.sipphone.com"/>
         </sipphone>
 <!--
-net.java.sip.communicator.gui.AUTH_WIN_TITLE=SIP Authentication!
-net.java.sip.communicator.gui.AUTHENTICATION_PROMPT=Please enter login name and password for the specified realm:
-net.java.sip.communicator.gui.USER_NAME_LABEL=SIPphone Number:
+net.java.sip.communicator.gui.AUTH_WIN_TITLE=Login Manager
+net.java.sip.communicator.gui.REG_WIN_TITLE=Registration Manager
+net.java.sip.communicator.gui.AUTHENTICATION_PROMPT=Please register to the service or enter your credentials to log in:
+net.java.sip.communicator.gui.REGISTRATION_PROMPT=Please fill in the following fields to register:
+net.java.sip.communicator.gui.USER_NAME_LABEL=Username:
 net.java.sip.communicator.sipphone.USER_NAME_EXAMPLE=Example: 1-747-555-1212
 net.java.sip.communicator.gui.PASSWORD_LABEL=Password:
+net.java.sip.communicator.gui.NAME_LABEL=Name:
+net.java.sip.communicator.gui.LAST_NAME_LABEL=Last name:
+net.java.sip.communicator.gui.MAIL_LABEL=Email:
+net.java.sip.communicator.gui.POLICY_LABEL=Policy:
+
 -->
         <gui>
-            <AUTH_WIN_TITLE value="SIP Authentication!"/>
-            <AUTHENTICATION_PROMPT value="Please enter login name and password for the specified realm:"/>
-            <USER_NAME_LABEL value="User Name:"/>
+            <AUTH_WIN_TITLE value="Login Manager"/>
+            <REG_WIN_TITLE value="Registration Manager"/>
+            <AUTHENTICATION_PROMPT value="Please register to the service or enter your credentials to log in:"/>
+            <REGISTRATION_PROMPT value="Please fill in the following fields to register:"/>
+            <USER_NAME_LABEL value="Username:"/>
             <USER_NAME_EXAMPLE value="Example: 1-747-555-1212"/>
             <PASSWORD_LABEL value="Password:"/>
+            <NAME_LABEL value="Name:"/>
+            <LAST_NAME_LABEL value="Last name:"/>
+            <MAIL_LABEL value="Email:"/>
+            <POLICY_LABEL value="Policy:"/>
+            
             <GUI_MODE value="PhoneUiMode"/>
             <!--GUI_MODE value="ImUiMode"/-->
             <imp>
@@ -114,10 +128,10 @@ net.java.sip.communicator.gui.PASSWORD_LABEL=Password:
 </gov>
 <javax>
     <sip>
-        <IP_ADDRESS value="192.168.1.3"/>
+        <IP_ADDRESS value="0.0.0.0"/>
         <STACK_NAME value="sip-communicator"/>
         <ROUTER_PATH value="net.java.sip.communicator.sip.SipCommRouter"/>
-        <OUTBOUND_PROXY value="192.168.1.3:4000/udp"/>
+        <OUTBOUND_PROXY value="147.102.237.160:4000/udp"/>
         <RETRANSMISSON_FILTER value=""/>
         <EXTENSION_METHODS value=""/>
         <RETRANSMISSION_FILTER value="true"/>

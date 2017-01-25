@@ -127,7 +127,7 @@ public class GuiManager
         String isSipphone = Utils.getProperty("net.java.sip.communicator.sipphone.IS_RUNNING_SIPPHONE");
         if(isSipphone != null && isSipphone.equalsIgnoreCase("true"))
             isThisSipphoneAnywhere = true;
-
+        
         //create actions first for they are used by others
         voiceMailAction = new VoiceMailAction();
         mySipphoneAction = new MySipphoneAction();
@@ -177,7 +177,7 @@ public class GuiManager
         JLabel logoLabel = new JLabel();
 
 //        logoLabel.setIcon(new ImageIcon(Utils.getResource("sip-communicator.jpg")));
-        logoLabel.setIcon(new ImageIcon(Utils.getResource("sip-communicator.logo.thin.jpg")));
+        logoLabel.setIcon(new ImageIcon(Utils.getResource("phone-icon-928.jpg")));
         logoPanel.add(logoLabel);
         logoPanel.setBackground(Color.white);
 
