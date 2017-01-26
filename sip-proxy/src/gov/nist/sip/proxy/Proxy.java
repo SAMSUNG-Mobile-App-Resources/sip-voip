@@ -57,6 +57,10 @@ public class Proxy implements SipListener  {
     protected Database database;
 
 
+    public Database getDatabase() {
+        return database;
+    }
+
     public RequestForwarding getRequestForwarding() {
         return requestForwarding;
     }

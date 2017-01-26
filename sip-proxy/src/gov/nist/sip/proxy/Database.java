@@ -48,6 +48,13 @@ public class Database {
 
         return true;
     }
+    
+    public UserInfo GetUser(String username) {
+    	if (activeDatabase.containsKey(username))
+    		return activeDatabase.get(username);
+    	else
+    		return null;
+    }
 
     public boolean Delete(String username) {
         String key = username;
