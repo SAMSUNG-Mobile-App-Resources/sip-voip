@@ -4,10 +4,6 @@ import java.util.Vector;
 import javax.sip.address.URI;
 import java.util.HashMap;
 
-enum Policy {
-    POLICY_A, POLICY_B, POLICY_C
-}
-
 public class UserInfo {
     private URI uri;
     private String username;
@@ -18,6 +14,11 @@ public class UserInfo {
     private Policy billingPolicy;
     private double balance;
 
+    public enum Policy {
+        POLICY_A, POLICY_B, POLICY_C
+    }
+
+    
     public UserInfo(String username, String pass, Policy billingPolicy, String address) {
         this.username = username;
         this.pass = pass;
