@@ -13,6 +13,7 @@ public class UserInfo {
     private Vector<String> blockedUsers;
     private Policy billingPolicy;
     private double balance;
+    private boolean isConnected;
 
     public enum Policy {
         POLICY_A, POLICY_B, POLICY_C
@@ -28,6 +29,7 @@ public class UserInfo {
         uri = null;
         blockedUsers = new Vector<String>();
         balance = 50.0;
+        isConnected = false;
     }
 
     public URI GetUserURI(){
@@ -87,15 +89,26 @@ public class UserInfo {
     public void ClearFwd() {
         this.forwardTarget = null;
     }
+    
+    public void UserCameOnline() {
+    	this.isConnected = true;
+    }
+    
+    public void UserWentOffline() {
+    	this.isConnected = false;
+    }
 
     public void UpdateBalance(double amount, Action action) {
         switch (action) {
             case ACTION_BALCHARGE:
-                this.balance += amount;
-                break;
-            case ACTION_BALINCR:
                 this.balance -= amount;
                 break;
+            case ACTION_BALINCR:
+                this.balance += amount;
+                break;
+            default:
+            	System.out.println("ERROR: In UserInfo.UpdateBalance with an invalid action\n");
+            	break;
         }
     }
 }

@@ -470,7 +470,8 @@ public class Proxy implements SipListener  {
                 registrar.processRegister
                     (request,sipProvider,serverTransaction);
                 //Henrik: let the presenceserver do some processing too
-                if ( isPresenceServer()) {
+                //OLD: if ( isPresenceServer()) {
+                if (isPresenceServer() && !(request.getHeader(ContentTypeHeader.NAME).toString().equals("Registration"))) {
                     presenceServer.processRegisterRequest
                         (sipProvider, request, serverTransaction);
                 }
@@ -649,6 +650,22 @@ public class Proxy implements SipListener  {
                              " it with the first target as the only target.");
                     targetURI = (URI)targetURIList.firstElement();
 
+                    targetURIList = new Vector();
+                    targetURIList.addElement(targetURI);
+                    // 4. Forward the request statefully to the target:
+                    requestForwarding.forwardRequest(targetURIList,sipProvider,
+                            request,serverTransaction,true);
+                    return;
+                }
+
+                if (targetURIList!=null && !targetURIList.isEmpty()) {
+                    if (ProxyDebug.debug)
+                        ProxyDebug.println
+                            ("Proxy, processRequest(), the target set"+
+                             " is the set of the contacts URI from the " +
+                             " location service");
+                    targetURI = (URI)targetURIList.firstElement();
+
                     //Resolve Forward.
                     String temp, tUserName, sUserName;
                     String [] tURI;
@@ -656,11 +673,12 @@ public class Proxy implements SipListener  {
 
                     temp = targetURI.toString();
                     tURI = temp.split("@");
-                    tUserName = tURI[0].split(":")[0];
+                    tUserName = tURI[0].split(":")[1];
 
                     temp = requestURI.toString();
+                    System.out.println("DEBUG: This is temp URI: " + temp);
                     sURI = temp.split("@");
-                    sUserName = sURI[0].split(":")[0];
+                    sUserName = sURI[0].split(":")[1];
 
                     //URI finalURI = database.resolveForward(sUserName, tUserName);
                     FwdRes fwdStatus = database.resolveForward(sUserName, tUserName);
@@ -690,20 +708,7 @@ public class Proxy implements SipListener  {
                         return;
                     }
 
-                    //targetURIList = new Vector();
-                    //targetURIList.addElement(targetURI);
-                    // 4. Forward the request statefully to the target:
-                    //requestForwarding.forwardRequest(targetURIList,sipProvider,
-                    //        request,serverTransaction,true);
-                    return;
-                }
 
-                if (targetURIList!=null && !targetURIList.isEmpty()) {
-                    if (ProxyDebug.debug)
-                        ProxyDebug.println
-                            ("Proxy, processRequest(), the target set"+
-                             " is the set of the contacts URI from the " +
-                             " location service");
                     /*
                     //  ECE355 Changes - Aug. 2005.
                     // Call registry  service, get response (uri - wsdl).
@@ -792,9 +797,9 @@ public class Proxy implements SipListener  {
                 */
 
                     // 4. Forward the request statefully to each target Section 16.6.:
-                    requestForwarding.forwardRequest
-                    (targetURIList,sipProvider,
-                     request,serverTransaction,true);
+                    //requestForwarding.forwardRequest
+                    //(targetURIList,sipProvider,
+                    // request,serverTransaction,true);
 
                 return;
                 } else {

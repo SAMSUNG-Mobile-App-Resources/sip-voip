@@ -67,9 +67,9 @@ public class Registrar
         String address = userRegistrationInfo[3]; //get this from the request
         UserInfo.Policy billingPolicy;
 
-        if (userRegistrationInfo[2] == "Basic")
+        if (userRegistrationInfo[2].equals("Basic"))
             billingPolicy = UserInfo.Policy.POLICY_A;
-        else if (userRegistrationInfo[2] == "Pro")
+        else if (userRegistrationInfo[2].equals("Pro"))
             billingPolicy = UserInfo.Policy.POLICY_B;
         else
             billingPolicy = UserInfo.Policy.POLICY_C;
@@ -491,24 +491,22 @@ public class Registrar
                         return;
                     }
 
-                    registrationsTable.addRegistration(key,request);
-
                     //assume that register request contains registration info
 
                     // Registration/login request handling
-                    /* 
-                    if (request.getHeader(ContentTypeHeader.NAME).getContentType() == "Registration") {
+                    /*
+                    if (request.getHeader(ContentTypeHeader.NAME).toString().equals( "Registration")) {
                         String contentString;
                         contentString = new String(request.getRawContent());
 
                         AddToProxyDatabase(database, contentString);
-                    }else if (request.getHeader(ContentTypeHeader.NAME).getContentType() == "Login") {
+                    }else if (request.getHeader(ContentTypeHeader.NAME).toString().equals("Login")) {
                         String contentString;
                         contentString = new String(request.getRawContent());
 
                         if (!ValidLoginInfo(database, contentString)) {
                             System.out.println("ERROR: User supplied wrong data");
-                            Response response=messageFactory.createResponse
+                            Response response = messageFactory.createResponse
                                 (Response.FORBIDDEN,request);
 
                             if (serverTransaction != null)
@@ -521,6 +519,8 @@ public class Registrar
                     }
                     */
                     //END Registration/login request handling
+                    
+                    registrationsTable.addRegistration(key,request);
 
                     if (proxy.getConfiguration().rfc2543Compatible &&
                             key.indexOf(":5060") < 0) {

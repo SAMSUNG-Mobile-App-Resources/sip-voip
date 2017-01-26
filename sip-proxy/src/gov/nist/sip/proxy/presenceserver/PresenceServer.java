@@ -1,10 +1,14 @@
 package gov.nist.sip.proxy.presenceserver;
 
+import java.nio.charset.Charset;
 import java.util.*;
+
 import javax.sip.*;
 import javax.sip.message.*;
 import javax.sip.header.*;
 import javax.sip.address.*;
+
+import gov.nist.javax.sip.header.ContentType;
 import gov.nist.sip.proxy.*;
 import gov.nist.sip.proxy.registrar.*;
 
@@ -36,28 +40,28 @@ import gov.nist.sip.proxy.registrar.*;
  */
 
 public class PresenceServer {
-    
+
     protected int expiresTime;
     protected Proxy proxy;
     protected PresentityManager presentityManager;
     private   Vector notifysToBeSent;
-    
+
     public PresenceServer(Proxy proxy) {
         expiresTime=proxy.getConfiguration().expiresTime;
         presentityManager=new PresentityManager(this);
         this.proxy=proxy;
     }
-    
-    
-    
-    
-    
+
+
+
+
+
     //*****************************
     //   REQUEST PROCESSING
     //*****************************
-    
-    
-    
+
+
+
     /** When a User Agent registers to the Registrar, the PresenceServer
      *  hands over all the contact Uri:s with expires times to the
      *  presentityManager.
@@ -68,13 +72,13 @@ public class PresenceServer {
      *  </ul>
      */
     public void processRegisterRequest(SipProvider sipProvider,
-				       Request request,
-				       ServerTransaction serverTransaction) {
-        
+            Request request,
+            ServerTransaction serverTransaction) {
+
         if (ProxyDebug.debug) {
             ProxyDebug.println("PresenceServer:processRegisterRequest: received a request\n" + request);
         }
-        
+
         try {
             //If the Accept header includes the Publish method
             // the PresenceServer will act as a ESC for the user
@@ -87,12 +91,12 @@ public class PresenceServer {
                     break;
                 }
             }
-            
+
             //if (!stateAgent) return;
-            
+
             //We are acting as the EventStateCompositor and/or PresenceAgent for
             // this User (EPA or PUA)
-            
+
             //Extract a default expires value.
             //Should be retrieved from the registrar instead.
             // Note, the expires value for a subscription and a registration are
@@ -100,14 +104,14 @@ public class PresenceServer {
             //   and less than 136 years, while the subscriptions are typically
             //   a few hours or so.
             ExpiresHeader expiresHeader=
-            (ExpiresHeader)request.getHeader(ExpiresHeader.NAME);
+                (ExpiresHeader)request.getHeader(ExpiresHeader.NAME);
             int expires;
             if (expiresHeader == null) {
                 expires = getExpiresTime(); //This is the PresenceServer expirestime
             } else {
                 expires = expiresHeader.getExpires();
             }
-            
+
             String notifierKey = getKey(request, "To");
             String contactURI;
             ListIterator cit = request.getHeaders(ContactHeader.NAME);
@@ -122,71 +126,114 @@ public class PresenceServer {
                    if(localExpires == -1) {
                    localExpires = expires;
                    }
-                 */
+                   */
                 presentityManager.processRegister(notifierKey, expires, contactURI);
             }
-            
-            
-            
-            
+
+
+
+
             //No response, that's for the Registrar
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     /** The registrar can (should) have a set of known users that are registered
      *  on startup. The registrar calls this method to let the presenceserver know of them
      *  so that other users may subscribe to them before they go online.
      */
-    
+
     public void processUploadedRegistration(Registration registration) {
         /*	 java.util.Vector 	getContactsList() //list of contactHeaders
-                 java.lang.String 	getDisplayName()
-                 java.lang.String 	getKey() */
+             java.lang.String 	getDisplayName()
+             java.lang.String 	getKey() */
         ProxyDebug.println("PresenceServer.processUploadedRegistration: " +
-        "\n   Key="+registration.getKey() +
-        "\n   DisplayName="+registration.getDisplayName() +
-        "\n   Contacts="+registration.getContactsList().toString());
-        
-	
+                "\n   Key="+registration.getKey() +
+                "\n   DisplayName="+registration.getDisplayName() +
+                "\n   Contacts="+registration.getContactsList().toString());
+
+
         presentityManager.processRegister(registration.getKey(),Integer.MAX_VALUE);
     }
+
+    private String GetUsernameFromUriString(String uriString) {
+        String[] temp = uriString.split("@");
+        String username = temp[0].split(":")[1];
+    	return null;
+    }
     
-    
-    
+    private byte[] GetByteArray(Vector<String> originalArray, Vector<String> toRemove) {
+    	Vector<String> filtered = (Vector<String>) originalArray.clone();
+
+        for (String entry : toRemove) {
+            if (filtered.contains(entry))
+                filtered.remove(entry);
+        }
+
+        String tempString = new String();
+
+        for (String entry : filtered) {
+            tempString += entry + "/:/";
+        }
+
+        byte[] res = tempString.getBytes(Charset.forName("UTF-8"));
+    	
+    	return res;
+    }
+
     /**
      * The PresenceServer can act as a Event State Compositor and processes
      * Publish requests according to draft-ietf-sip-publish-02
      */
     public void processPublishRequest(SipProvider sipProvider,
-				      Request request,
-				      ServerTransaction serverTransaction) {
-        
+            Request request,
+            ServerTransaction serverTransaction) {
+
         if (ProxyDebug.debug) {
             ProxyDebug.println("PresenceServer:processPublishRequest: received a request\n" + request);
         }
-        
+
         try {
             int responseCode;
-            
-            
+            Database database = proxy.getDatabase();
+
             //Authenticate user
-            
-            
+
+            String typeOfPublish = request.getHeader(ContentTypeHeader.NAME).toString();
+            String username = GetUsernameFromUriString(request.getRequestURI().toString());
+            byte[] responseBody = null;
+
+            Vector<String> allUsers = database.GetAllUsers();
+            if (typeOfPublish.equals("Block") || typeOfPublish.equals("Forward")) {
+                Vector<String> blockedUsers = database.GetUser(username).GetBlockedUsers();
+                blockedUsers.add(username);
+
+                responseBody = GetByteArray(allUsers, blockedUsers);
+            }else if (typeOfPublish.equals("Unblock")) {
+                Vector<String> blockedUsers = database.GetUser(username).GetBlockedUsers();
+                
+                responseBody = GetByteArray(blockedUsers, null);
+            }/*else if (typeOfPublish == "Forward") {
+                Vector<String> currentUser = new Vector<String>();
+                currentUser.add(username);
+                responseBody = GetByteArray(allUsers, currentUser);
+            }*/
+
             //Hand over to PresentityManager
             responseCode = presentityManager.processPublish(request);
-            
+
             //Send response
             MessageFactory messageFactory = proxy.getMessageFactory();
             HeaderFactory headerFactory = proxy.getHeaderFactory();
-            Response response = messageFactory.createResponse(responseCode, request);
-            
+            //Response response = messageFactory.createResponse(responseCode, request);
+            Response response = messageFactory.createResponse(responseCode, request, new ContentType(typeOfPublish, ""), responseBody);
+
             //add SIP-ETag header
             Header eTag = headerFactory.createHeader("Sip-ETag",
-						     proxy.getProxyUtilities().generateTag());
+                    proxy.getProxyUtilities().generateTag());
             response.addHeader(eTag);
-            
+
             //Add tag-parameter to To-header
             ToHeader toHeader = (ToHeader)response.getHeader(ToHeader.NAME);
             if(toHeader.getTag()==null) {
@@ -203,12 +250,12 @@ public class PresenceServer {
             e.printStackTrace();
         }
     }
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     /** Starts or ends subscriptions between registered user agents.<br>
      *  After verifyiong that the headers are understood, the PresenceServer
      *  tries to match the Event-, Supported- and AcceptHeaders between
@@ -250,26 +297,26 @@ public class PresenceServer {
      *  Hands over the Subscription to the presentityManager
      */
     public void processSubscribeRequest(SipProvider sipProvider,
-					Request request,
-					ServerTransaction serverTransaction) {
-        
+            Request request,
+            ServerTransaction serverTransaction) {
+
         if (ProxyDebug.debug) {
             ProxyDebug.println
-            ("PresenceServer:processSubscribeRequest:received a request\n"
-            + request);
+                ("PresenceServer:processSubscribeRequest:received a request\n"
+                 + request);
         }
-        
+
         try {
             int responseCode;
-            
+
             //Authenticate user
-            
+
             //Examine expires header
             //Note: no regard is taken to the registration time of the
             //  notifyer, a subscription can last longer than a registration
             //  because the registrar will not supply the expires time.
             ExpiresHeader expiresHeader=
-            (ExpiresHeader)request.getHeader(ExpiresHeader.NAME);
+                (ExpiresHeader)request.getHeader(ExpiresHeader.NAME);
             int expires;
             if (expiresHeader==null) {
                 HeaderFactory headerFactory = proxy.getHeaderFactory();
@@ -285,14 +332,14 @@ public class PresenceServer {
             }
             expires = expiresHeader.getExpires();
             ProxyDebug.println("   ExpiresHeader = " + expires);
-            
-            
-            
+
+
+
             //Hand over the request to PresentityManager
             Dialog dialog = serverTransaction.getDialog();
             responseCode = presentityManager.processSubscribe(request, dialog, expires);
-            
-            
+
+
             //Send response, add tag if necessary
             MessageFactory messageFactory = proxy.getMessageFactory();
             Response response = messageFactory.createResponse(responseCode, request);
@@ -301,22 +348,22 @@ public class PresenceServer {
                 to.setTag(ProxyUtilities.generateTag());
             }
             serverTransaction.sendResponse(response);
-            
+
             //If a new subscription was created, it should get
             // a notify straight away, especially if it is a Fetcher
             // or if the subscription was terminated directly,
             // otherwise, the subscription is lost.
             //It must be sent after the response above, of course.
             presentityManager.sendInitialNotify();
-            
-            
+
+
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
-    
-    
-    
+
+
+
     /**
      * Processes Notify requests from virtual subscriptions, in other words
      *  Subscriptions that the PresenceServer has issued to external resources
@@ -326,28 +373,28 @@ public class PresenceServer {
      *  a 200 OK. Sets the subscribers dirty bit or terminates the
      *  serversubscription depending on the subscription state.
      */
-    
+
     public void processNotifyRequest(SipProvider sipProvider,
-    Request notify,
-    ServerTransaction serverTransaction) {
+            Request notify,
+            ServerTransaction serverTransaction) {
         if (ProxyDebug.debug) {
             ProxyDebug.println("processNotifyRequest: PresenceServer receives a Notify request");
-            
+
         }
-        
+
         try {
             String presentity = getKey((Message)notify, "From");
             int responseCode = Response.OK;
             MessageFactory messageFactory = proxy.getMessageFactory();
             Response response;
-            
+
             if(serverTransaction == null) {
                 responseCode = Response.CALL_OR_TRANSACTION_DOES_NOT_EXIST;
                 response = messageFactory.createResponse(responseCode, notify);
                 sipProvider.sendResponse(response);
                 return;
             }
-            
+
             Dialog dialog = serverTransaction.getDialog();
             if(dialog == null) {
                 responseCode = Response.CALL_OR_TRANSACTION_DOES_NOT_EXIST;
@@ -355,196 +402,196 @@ public class PresenceServer {
                 serverTransaction.sendResponse(response);
                 return;
             }
-            
+
             //Send to presentityManager
             responseCode = presentityManager.processNotify(notify, dialog);
-            
+
             //Reply to notifier
             response = messageFactory.createResponse(responseCode,notify);
             serverTransaction.sendResponse(response);
-            
+
             ProxyDebug.println("processNotifyRequest(), response sent:" +
-            response.toString());
-            
-            
+                    response.toString());
+
+
         }
         catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    
-    
-    
+
+
+
+
     //*****************************
     //   RESPONSE PROCESSING
     //*****************************
-    
-    
-    
-    
+
+
+
+
     /** If the response is not a class 2xx response, we might want to try again or terminate
      *  all subscriptions to this UA. Otherwise hand over the recently created dialog to
      *  the presentityManager.
      */
     public void processSubscribeResponse(Response response, ClientTransaction clientTransaction) {
-        
+
         if (ProxyDebug.debug) {
             ProxyDebug.println("PresenceServer:processSubscribeResponse: received a response\n" + response);
         }
-        
+
         try {
-            
+
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
-    
-    
-    
+
+
+
     /** Do nothing?
      *
      */
     public void processNotifyResponse(Response response, ClientTransaction clientTransaction) {
-        
+
         if (ProxyDebug.debug) {
             ProxyDebug.println("PresenceServer:processNotifyResponse: received a response\n" + response);
         }
-        
+
         try {
-            
+
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
-    
-    
-    
-    
+
+
+
+
     //*****************************
     //   SEND METHODS
     //*****************************
-    
-    
+
+
     /**
      *  Sends an options request to the UA
      */
     protected void sendOptionsRequest(String toURI) {
-        
+
     }
-    
-    
-    
-    
-    
+
+
+
+
+
     /**
      *  Sends an Subscribe request to an external ESC
      *
      */
     protected void sendSubscribeRequest(String toURI,
-    int expires, Dialog dialog) {
-        
+            int expires, Dialog dialog) {
+
     }
-    
-    
+
+
     protected void sendNotifyRequest(Subscriber subscriber) {
-        
+
         if (ProxyDebug.debug) {
             ProxyDebug.println("PresenceServer:sendNotifyRequest to " +
-            subscriber.getSubscriberURL());
+                    subscriber.getSubscriberURL());
         }
         try {
-            
+
             HeaderFactory hf        = proxy.getHeaderFactory();
             MessageFactory mf       = proxy.getMessageFactory();
             Dialog dialog           = subscriber.getDialog();
-            
+
             if(dialog == null) {
                 ProxyDebug.println("PresenceServer:sendNotifyRequest: dialog doesn't exist, nothing sent");
                 return;
             }
-            
+
             //First perform some checks
             String subscriptionState = subscriber.getSubscriptionState();
             String notifyBody = subscriber.removeNotifyBody();
-            
+
             if(notifyBody==null || notifyBody.equals("")) {
                 if (!subscriptionState.equalsIgnoreCase("terminated")) {
                     ProxyDebug.println
-                    ("PresenceServer:sendNotifyRequest: " +
-                    "   NotifyBody is null \n" +
-                    "   subscriptionState = " + subscriptionState +
-                    "   Nothing sent");
+                        ("PresenceServer:sendNotifyRequest: " +
+                         "   NotifyBody is null \n" +
+                         "   subscriptionState = " + subscriptionState +
+                         "   Nothing sent");
                     return;
                 }
             }
-            
-            
-            
+
+
+
             //Create the Notify request and add som headers
             Request notify = dialog.createRequest(Request.NOTIFY);
-            
+
             //Add Event Header
             notify.addHeader(hf.createEventHeader("presence"));
-            
+
             //Create SubscriptionState Header (add later)
             SubscriptionStateHeader ssH =
-            hf.createSubscriptionStateHeader(subscriptionState);
-            
+                hf.createSubscriptionStateHeader(subscriptionState);
+
             if ((subscriptionState.equalsIgnoreCase(SubscriptionStateHeader.ACTIVE)) ||
-            (subscriptionState.equalsIgnoreCase(SubscriptionStateHeader.PENDING))) {
-                
+                    (subscriptionState.equalsIgnoreCase(SubscriptionStateHeader.PENDING))) {
+
                 //Add expires parameter to Subscription state header
                 ssH.setExpires(subscriber.getExpiresTime());
-                
+
                 //Add Presence-info and Content-Type Header.
                 //The media type should be derived from the Registration request
                 ContentTypeHeader ctH = hf.createContentTypeHeader("application", "pidf+xml");
                 notify.setContent(notifyBody, ctH);
-                
+
                 //Add Authorization Header?
             } else {
                 ProxyDebug.println("subscription state is " +
-                subscriptionState);
+                        subscriptionState);
             }
-            
+
             //Add SubscriptionStateHeader
             notify.addHeader(ssH);
-            
+
             ClientTransaction clientTransaction =
-            proxy.getSipProvider().getNewClientTransaction(notify);
-            
+                proxy.getSipProvider().getNewClientTransaction(notify);
+
             //Send Notify
             dialog.sendRequest(clientTransaction);
-            
+
             if(ProxyDebug.debug) {
                 ProxyDebug.println("PresenceServer:sendNotifyRequest. Request sent: \n" + notify.toString());
             }
-            
-            
+
+
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
-    
-    
-    
-    
-    
+
+
+
+
+
     //*****************************
     //   GETTERS & SETTERS
     //*****************************
-    
-    
+
+
     public PresentityManager getPresentityManager() {
         return presentityManager;
     }
-    
-    
+
+
     public int getExpiresTime() {
         return expiresTime;
     }
-    
+
     /**
      *  returns true if the notifier of this subscription
      *  is publishing it's state here and if the subscriber
@@ -558,7 +605,7 @@ public class PresenceServer {
      **/
     public boolean isStateAgent(Request request) {
         String notifierKey = getKey(request, "To");
-        
+
         if (presentityManager.hasNotifier(notifierKey)) {
             if(request.getMethod().equalsIgnoreCase("PUBLISH") ) {
                 return true;
@@ -568,19 +615,19 @@ public class PresenceServer {
                 while (acceptHeaders.hasNext()) {
                     AcceptHeader acceptHeader = (AcceptHeader)acceptHeaders.next();
                     if(acceptHeader.getContentType().equals("application") &&
-                    acceptHeader.getContentSubType().equals("pidf+xml"))
+                            acceptHeader.getContentSubType().equals("pidf+xml"))
                         return true;
                 }
                 return false;
             }
         }   else {
             ProxyDebug.println("could not find notifier record for "
-            + notifierKey);
+                    + notifierKey);
             return false;
         }
         return false;
     }
-    
+
     /** Returns true if the registration records the from header as being a buddy. So OK
      * to report that buddy has not yet registered.
      */
@@ -593,16 +640,16 @@ public class PresenceServer {
             else return false;
         }  else return false;
     }
-    
-    
-    
+
+
+
     //*****************************
     //   UTILITY METHODS
     //*****************************
-    
-    
-    
-    
+
+
+
+
     /**
      * Returns the value of a named header
      * @author deruelle
@@ -612,17 +659,17 @@ public class PresenceServer {
             Address address=null;
             if (header.equals("From") ) {
                 FromHeader fromHeader=(FromHeader)
-                message.getHeader(FromHeader.NAME);
+                    message.getHeader(FromHeader.NAME);
                 address=fromHeader.getAddress();
-                
+
             }
             else
                 if (header.equals("To") ) {
                     ToHeader toHeader=(ToHeader)message.getHeader(ToHeader.NAME);
                     address=toHeader.getAddress();
-                    
+
                 }
-            
+
             javax.sip.address.URI cleanedUri=null;
             if (address==null) {
                 cleanedUri= getCleanUri( ((Request)message).getRequestURI());
@@ -632,22 +679,22 @@ public class PresenceServer {
                 // URI parameters MUST be removed:
                 cleanedUri = getCleanUri(address.getURI());
             }
-            
+
             if (cleanedUri==null) return null;
-            
+
             String  keyresult=cleanedUri.toString();
             ProxyDebug.println("DEBUG, PresenceServer, getKey(), the key is: " +
-            keyresult);
+                    keyresult);
             return keyresult.toLowerCase();
-            
+
         }
         catch(Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-    
-    
+
+
     /**
      * Helper for getKey. Removes parameters from URI
      * @author deruelle
@@ -655,7 +702,7 @@ public class PresenceServer {
     private static URI getCleanUri(URI uri) {
         if (uri instanceof SipURI) {
             SipURI sipURI=(SipURI)uri.clone();
-            
+
             Iterator iterator=sipURI.getParameterNames();
             while (iterator!=null && iterator.hasNext()) {
                 String name=(String)iterator.next();
@@ -665,22 +712,22 @@ public class PresenceServer {
         }
         else return  uri;
     }
-    
-    
+
+
     /** Stop the presentity manager.
-     */
+    */
     public void stop() {
         this.presentityManager.stop();
     }
-    
+
     //*****************************
     //   OLD METHODS
     //
     // Required by other parts of the proxy
     // Should deprecate.
     //*****************************
-    
-    
+
+
     /**
      *  This is only here because RequestValidation.java and the Registrar needs it.
      *  Should deprecate.
@@ -691,9 +738,9 @@ public class PresenceServer {
         // conflict with method authorize() if we're not careful
         return true;
     }
-    
-    
-    
-    
-    
+
+
+
+
+
 }

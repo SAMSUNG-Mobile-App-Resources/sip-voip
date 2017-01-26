@@ -35,6 +35,16 @@ public class Database {
 
     public Database(){
         activeDatabase = new HashMap<String, UserInfo>();
+
+        //NOTE: For debugging only, remove later
+        
+        UserInfo user1 = new UserInfo("fellos", "8cb2237d0679ca88db6464eac60da96345513964", UserInfo.Policy.POLICY_A, "192.168.1.1");
+        UserInfo user2 = new UserInfo("piofellos", "8cb2237d0679ca88db6464eac60da96345513964", UserInfo.Policy.POLICY_A, "192.168.1.2");
+        UserInfo user3 = new UserInfo("ipiosfellos", "8cb2237d0679ca88db6464eac60da96345513964", UserInfo.Policy.POLICY_B, "192.168.1.3");
+
+        activeDatabase.put(user1.GetUserName(), user1); 
+        activeDatabase.put(user2.GetUserName(), user2); 
+        activeDatabase.put(user2.GetUserName(), user3); 
     }
 
     public boolean InsertUser(UserInfo user) {
@@ -54,6 +64,15 @@ public class Database {
     		return activeDatabase.get(username);
     	else
     		return null;
+    }
+    
+    public Vector<String> GetAllUsers() {
+    	Vector<String> res = new Vector<String>();
+    	for (HashMap.Entry<String, UserInfo> entry : activeDatabase.entrySet()) {
+    		res.add(entry.getKey());
+    	}
+    	
+    	return res;
     }
 
     public boolean Delete(String username) {
