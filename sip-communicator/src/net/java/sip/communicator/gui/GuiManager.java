@@ -350,23 +350,18 @@ public class GuiManager
 
 //----------------- Event dispatching------------------------
     void forwardButton_actionPerformed(EventObject evt){
-    	System.out.println("NAAAAII");
-    	//ForwardSplash forwarding = new ForwardSplash();
     	ForwardSplash.FwdS(300, 300);
     }
     
     void unforwardButton_actionPerformed(EventObject evt){
-    	System.out.println("Axilleas");
     	ForwardSplash.UFwdS(300, 300);
     }
     
     void blockButton_actionPerformed(EventObject evt){
-    	System.out.println("Marialena");
     	BlockSplash.Block(300, 300);
     }
     
     void unblockButton_actionPerformed(EventObject evt){
-    	System.out.println("Fellopoulos");
     	BlockSplash.Block(300, 300);
     }
     

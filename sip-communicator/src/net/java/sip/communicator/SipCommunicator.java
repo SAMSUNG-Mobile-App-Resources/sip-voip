@@ -100,6 +100,7 @@ public class SipCommunicator
     protected SipManager               sipManager               = null;
     protected SimpleContactList        simpleContactList        = null;
     protected PresenceStatusController presenceStatusController = null;
+    public static String[] 		       globalChoices 			= null;
 
     protected Integer unregistrationLock = new Integer(0);
 
