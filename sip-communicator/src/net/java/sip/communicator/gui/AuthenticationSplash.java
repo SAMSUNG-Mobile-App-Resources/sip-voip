@@ -196,7 +196,7 @@ public class AuthenticationSplash
      * to provide much more useful information to the user.
      */
     
-    private void initComponents(Frame parent)
+    private void initComponents(final Frame parent)
     {
         Container contents = getContentPane();
         contents.setLayout(new BorderLayout());
@@ -792,7 +792,7 @@ public class AuthenticationSplash
     	}
     	
     	// Is between 4 and 10 characters
-    	if((userName.length() < 3) || (userName.length() > 10))
+    	if((userName.length() < 4) || (userName.length() > 18))
     		usern =  false;
     	
     	// Name and last name checks
@@ -842,7 +842,7 @@ public class AuthenticationSplash
     		pwd = false;
     	
     	// Verify that the size is acceptable
-    	if(password.length() < 5 || password.length() > 13)
+    	if(password.length() < 6 || password.length() > 30)
     		pwd = false;
     	
     	// Change the label colors
