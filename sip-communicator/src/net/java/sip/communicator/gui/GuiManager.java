@@ -725,10 +725,12 @@ public class GuiManager
         }
     }
 
-    public void requestAuthentication(String realm,
+    public String[] requestAuthentication(String realm,
                                       String userName,
-                                      char[] password)
+                                      String password)
     {
+        String[] other;
+        other = new String[5];
         if (authenticationSplash != null)
             authenticationSplash.dispose();
         authenticationSplash = new AuthenticationSplash(phoneFrame, true);
@@ -741,6 +743,17 @@ public class GuiManager
         if(realm != null)
             authenticationSplash.realmValueLabel.setText(new String(realm));
         authenticationSplash.setVisible(true);
+        if(authenticationSplash.parity.equals("false"))
+        	// For some, nothing is something
+        	other[0] = "false";
+        else {
+        	other[0] = "true";
+        	other[1] = authenticationSplash.name;
+        	other[2] = authenticationSplash.lastName;
+        	other[3] = authenticationSplash.mail;
+        	other[4] = authenticationSplash.policy;
+        }
+        return other;
     }
 
     public String getAuthenticationUserName()
@@ -748,7 +761,7 @@ public class GuiManager
         return authenticationSplash.userName;
     }
 
-    public char[] getAuthenticationPassword()
+    public String getAuthenticationPassword()
     {
         return authenticationSplash.password;
     }

@@ -793,13 +793,15 @@ public class SipCommunicator
         try{
             console.logEntry();
 
-            guiManager.requestAuthentication(realm,
+            String[] other;
+            other = guiManager.requestAuthentication(realm,
                                              defaultValues.getUserName(),
                                              defaultValues.getPassword());
 
             UserCredentials credentials = new UserCredentials();
             credentials.setUserName(guiManager.getAuthenticationUserName());
             credentials.setPassword(guiManager.getAuthenticationPassword());
+            credentials.setOtherStuff(other);
 
             return credentials;
         }

@@ -67,7 +67,16 @@ package net.java.sip.communicator.sip.security;
 public class UserCredentials
 {
     private String userName = null;
-    private char[] password =  null;
+    private String password =  null;
+    private String[] otherStuff = null;
+    
+    public void setOtherStuff(String[] other) {
+    	this.otherStuff = other;
+    }
+    
+    public String[] getOtherStuff() {
+    	return this.otherStuff;
+    }
 
     /**
      * Sets the user name.
@@ -92,7 +101,7 @@ public class UserCredentials
      *
      * @param passwd The password associated with username
      */
-    public void setPassword(char[] passwd)
+    public void setPassword(String passwd)
     {
         this.password = passwd;
     }
@@ -102,7 +111,7 @@ public class UserCredentials
      *
      * @return these credentials' password
      */
-    public char[] getPassword()
+    public String getPassword()
     {
         return password;
     }

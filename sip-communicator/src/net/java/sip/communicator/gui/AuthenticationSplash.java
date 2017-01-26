@@ -66,6 +66,8 @@ import java.util.regex.Pattern;
 
 import javax.swing.*;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import net.java.sip.communicator.common.*;
 
 //import samples.accessory.StringGridBagLayout;
@@ -77,11 +79,12 @@ public class AuthenticationSplash
     extends JDialog
 {
     String userName = null;
-    char[] password = null;
+    String password = null;
     String name = null;
     String lastName = null;
     String mail = null;
     String policy = null;
+    String parity = "false";
     
     JTextField userNameTextField = null;
     JTextField nameTextField = null;
@@ -760,10 +763,12 @@ public class AuthenticationSplash
         	name = nameTextField.getText();
         	mail = mailTextField.getText();
         	policy = (String) policyDropDown.getSelectedItem();
-        	password = passwordTextField.getPassword();
+        	password = passwordTextField.getText();
         	
         	if(!valid())
         		return;
+        	password = DigestUtils.sha1Hex(password);
+        	parity = "true";
         }
         setVisible(false);
         dispose();
@@ -823,21 +828,21 @@ public class AuthenticationSplash
     	
     	// Check that we have a variety of different characters
     	boolean lower = false, upper = false, number = false, other = false;
-    	for(idx = 0; idx < password.length; idx++) {
-    		if(Character.isUpperCase(password[idx]))
+    	for(idx = 0; idx < password.length(); idx++) {
+    		if(Character.isUpperCase(password.charAt(idx)))
     			upper = true;
-    		if(Character.isLowerCase(password[idx]))
+    		if(Character.isLowerCase(password.charAt(idx)))
     			lower = true;
-    		if(!Character.isLetterOrDigit(password[idx]))
+    		if(!Character.isLetterOrDigit(password.charAt(idx)))
     			other = true;
-    		if(Character.isDigit(password[idx]))
+    		if(Character.isDigit(password.charAt(idx)))
     			number = true;
     	}
     	if(!(upper && lower && number && other))
     		pwd = false;
     	
     	// Verify that the size is acceptable
-    	if(password.length < 5 || password.length > 13)
+    	if(password.length() < 5 || password.length() > 13)
     		pwd = false;
     	
     	// Change the label colors
@@ -900,7 +905,8 @@ public class AuthenticationSplash
         }
         else if (cmd.equals(CMD_LOGIN)) {
             userName = userNameTextField.getText();
-            password = passwordTextField.getPassword();
+            password = passwordTextField.getText();
+            password = DigestUtils.sha1Hex(password);
             setVisible(false);
             dispose();
         }

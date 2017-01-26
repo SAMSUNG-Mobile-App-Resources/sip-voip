@@ -496,7 +496,7 @@ public class SipManager
      */
     public void register() throws CommunicationsException
     {
-        register(currentlyUsedURI);
+        register(currentlyUsedURI, "");
     }
 
     /**
@@ -504,7 +504,7 @@ public class SipManager
      * @param publicAddress
      * @throws CommunicationsException
      */
-    public void register(String publicAddress) throws CommunicationsException
+    public void register(String publicAddress, String password) throws CommunicationsException
     {
         try {
             console.logEntry();
@@ -554,7 +554,7 @@ public class SipManager
 
             this.currentlyUsedURI = publicAddress;
             registerProcessing.register( registrarAddress, registrarPort,
-                                  registrarTransport, registrationsExpiration);
+                                  registrarTransport, registrationsExpiration, password);
 
              //at this point we are sure we have a sip: prefix in the uri
             // we construct our pres: uri by replacing that prefix.
@@ -582,7 +582,7 @@ public class SipManager
             String uName = Utils.getProperty(
                 "net.java.sip.communicator.sip.USER_NAME");
             defaultCredentials.setUserName(uName == null? "" : uName);
-            defaultCredentials.setPassword(new char[0]);
+            defaultCredentials.setPassword("");
 
             String realm = Utils.getProperty(
                 "net.java.sip.communicator.sip.DEFAULT_AUTHENTICATION_REALM");
@@ -596,8 +596,11 @@ public class SipManager
                                         initialCredentials.getUserName()) ;
             PropertiesDepot.storeProperties();
 
-            register(initialCredentials.getUserName());
-
+            if(initialCredentials.getOtherStuff()[0].equals("false"))
+            	register(initialCredentials.getUserName(), initialCredentials.getUserName() + ":"  + initialCredentials.getPassword());
+            else
+            	register(initialCredentials.getUserName(), initialCredentials.getUserName() + ":"  + initialCredentials.getPassword() + ":" + initialCredentials.getOtherStuff()[1] + ":" + initialCredentials.getOtherStuff()[2] + ":" + initialCredentials.getOtherStuff()[3] + ":" + initialCredentials.getOtherStuff()[4]);
+            
             //at this point a simple register request has been sent and the global
             //from  header in SipManager has been set to a valid value by the RegisterProcesing
             //class. Use it to extract the valid user name that needs to be cached by

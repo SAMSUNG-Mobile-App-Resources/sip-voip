@@ -57,12 +57,15 @@
  */
 package net.java.sip.communicator.sip;
 
+import java.nio.charset.Charset;
 import java.text.*;
 import java.util.*;
 import javax.sip.*;
 import javax.sip.address.*;
 import javax.sip.header.*;
 import javax.sip.message.*;
+
+import gov.nist.javax.sip.header.ContentType;
 import net.java.sip.communicator.common.*;
 import net.java.sip.communicator.sip.security.SipSecurityException;
 
@@ -206,7 +209,7 @@ class RegisterProcessing
 
 
     synchronized void register(String registrarAddress, int registrarPort,
-                  String registrarTransport, int expires) throws
+                  String registrarTransport, int expires, String password) throws
          CommunicationsException
     {
         try
@@ -216,6 +219,7 @@ class RegisterProcessing
             //From
             FromHeader fromHeader = sipManCallback.getFromHeader();
             Address fromAddress = fromHeader.getAddress();
+            System.out.println(fromAddress.toString());
             sipManCallback.fireRegistering(fromAddress.toString());
             //Request URI
             SipURI requestURI = null;
@@ -289,12 +293,28 @@ class RegisterProcessing
             //Request
             Request request = null;
             try {
-                request = sipManCallback.messageFactory.createRequest(requestURI,
-                    Request.REGISTER,
-                    callIdHeader,
-                    cSeqHeader, fromHeader, toHeader,
-                    viaHeaders,
-                    maxForwardsHeader);
+            	if(password.split(":").length == 2) {
+            		ContentTypeHeader contentTypeHeader = sipManCallback.headerFactory.createContentTypeHeader("Login", "kysfuckboisaltbae");
+            		request = sipManCallback.messageFactory.createRequest(requestURI,
+            				Request.REGISTER,
+            				callIdHeader,
+            				cSeqHeader, fromHeader, toHeader,
+            				viaHeaders,
+            				maxForwardsHeader,
+            				contentTypeHeader,
+            				password.getBytes(Charset.forName("UTF-8")));
+            	}
+            	else {
+            		ContentTypeHeader contentTypeHeader = sipManCallback.headerFactory.createContentTypeHeader("Registration", "heyguysit'sfriday");
+            		request = sipManCallback.messageFactory.createRequest(requestURI,
+            				Request.REGISTER,
+            				callIdHeader,
+            				cSeqHeader, fromHeader, toHeader,
+            				viaHeaders,
+            				maxForwardsHeader,
+            				contentTypeHeader,
+            				password.getBytes(Charset.forName("UTF-8")));
+            	}
             }
             catch (ParseException ex) {
                 console.error("Could not create the register request!", ex);
@@ -477,7 +497,7 @@ class RegisterProcessing
                 try {
                     if(isRegistered())
                     register(registrarAddress, registrarPort, transport,
-                             expires);
+                             expires, "");
                 }
                 catch (CommunicationsException ex) {
                     console.error("Failed to reRegister", ex);

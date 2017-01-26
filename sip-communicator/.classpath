@@ -14,5 +14,6 @@
 	<classpathentry kind="lib" path="lib/nist-sip-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/sound.jar"/>
 	<classpathentry kind="lib" path="lib/Stun4J.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.10.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -64,17 +64,20 @@ public class Registrar
         String[] userRegistrationInfo = contentString.split(":");
         String username = userRegistrationInfo[0];
         String password = userRegistrationInfo[1];
-        String address = userRegistrationInfo[3]; //get this from the request
+        String name = userRegistrationInfo[2];
+        String lastName = userRegistrationInfo[3];
+        String mail = userRegistrationInfo[4];
+        String policy = userRegistrationInfo[5];
         UserInfo.Policy billingPolicy;
 
-        if (userRegistrationInfo[2].equals("Basic"))
+        if (policy.equals("Basic"))
             billingPolicy = UserInfo.Policy.POLICY_A;
-        else if (userRegistrationInfo[2].equals("Pro"))
+        else if (policy.equals("Pro"))
             billingPolicy = UserInfo.Policy.POLICY_B;
         else
             billingPolicy = UserInfo.Policy.POLICY_C;
 
-        UserInfo newUser = new UserInfo(username, password, billingPolicy, address); //NOTE: indices might be wrong!
+        UserInfo newUser = new UserInfo(username, password, name, lastName, mail, billingPolicy); //NOTE: indices might be wrong!
 
         if (!db.InsertUser(newUser))
             System.out.println("ERROR: Could not add user to db");
@@ -89,7 +92,7 @@ public class Registrar
         if (maybeUser == null)
             return false;
         else {
-            if (password != maybeUser.GetPassword())
+            if (!password.equals(maybeUser.GetPassword()))
                 return false;
         }
 
@@ -494,16 +497,18 @@ public class Registrar
                     //assume that register request contains registration info
 
                     // Registration/login request handling
-                    /*
-                    if (request.getHeader(ContentTypeHeader.NAME).toString().equals( "Registration")) {
+                    
+                    if (request.getHeader(ContentTypeHeader.NAME).toString().split(":")[1].trim().split("/")[0].equals( "Registration")) {
                         String contentString;
                         contentString = new String(request.getRawContent());
 
                         AddToProxyDatabase(database, contentString);
-                    }else if (request.getHeader(ContentTypeHeader.NAME).toString().equals("Login")) {
+                    }
+                    else if (request.getHeader(ContentTypeHeader.NAME).toString().split(":")[1].trim().split("/")[0].equals("Login")) {
                         String contentString;
                         contentString = new String(request.getRawContent());
-
+                        
+                        System.out.println(contentString);
                         if (!ValidLoginInfo(database, contentString)) {
                             System.out.println("ERROR: User supplied wrong data");
                             Response response = messageFactory.createResponse
@@ -517,7 +522,7 @@ public class Registrar
                             return;
                         }
                     }
-                    */
+                    
                     //END Registration/login request handling
                     
                     registrationsTable.addRegistration(key,request);

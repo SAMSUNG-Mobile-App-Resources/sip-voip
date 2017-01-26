@@ -38,9 +38,9 @@ public class Database {
 
         //NOTE: For debugging only, remove later
         
-        UserInfo user1 = new UserInfo("fellos", "8cb2237d0679ca88db6464eac60da96345513964", UserInfo.Policy.POLICY_A, "192.168.1.1");
-        UserInfo user2 = new UserInfo("piofellos", "8cb2237d0679ca88db6464eac60da96345513964", UserInfo.Policy.POLICY_A, "192.168.1.2");
-        UserInfo user3 = new UserInfo("ipiosfellos", "8cb2237d0679ca88db6464eac60da96345513964", UserInfo.Policy.POLICY_B, "192.168.1.3");
+        UserInfo user1 = new UserInfo("fellos", "8cb2237d0679ca88db6464eac60da96345513964", "giorgos", "pantavlakopoulos", "george@vlakas.com", UserInfo.Policy.POLICY_A);
+        UserInfo user2 = new UserInfo("piofellos", "8cb2237d0679ca88db6464eac60da96345513964", "marialena", "fragkaki", "maria@elena.com", UserInfo.Policy.POLICY_A);
+        UserInfo user3 = new UserInfo("ipiosfellos", "8cb2237d0679ca88db6464eac60da96345513964", "theos", "panemorfos", "opioomorfos@theos.com", UserInfo.Policy.POLICY_B);
 
         activeDatabase.put(user1.GetUserName(), user1); 
         activeDatabase.put(user2.GetUserName(), user2); 

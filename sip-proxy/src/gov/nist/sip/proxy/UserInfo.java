@@ -8,8 +8,10 @@ public class UserInfo {
     private URI uri;
     private String username;
     private String pass;
+    private String name;
+    private String lastName;
+    private String mail;
     private String forwardTarget;
-    private String address;
     private Vector<String> blockedUsers;
     private Policy billingPolicy;
     private double balance;
@@ -20,11 +22,13 @@ public class UserInfo {
     }
 
     
-    public UserInfo(String username, String pass, Policy billingPolicy, String address) {
+    public UserInfo(String username, String pass, String name, String lastName, String mail, Policy billingPolicy) {
         this.username = username;
         this.pass = pass;
+        this.name = name;
+        this.lastName = lastName;
+        this.mail = mail;
         this.billingPolicy = billingPolicy;
-        this.address = address;
         forwardTarget = null;
         uri = null;
         blockedUsers = new Vector<String>();
@@ -38,6 +42,18 @@ public class UserInfo {
 
     public String GetUserName() {
         return username;
+    }
+    
+    public String GetName() {
+    	return name;
+    }
+    
+    public String GetLastName() {
+    	return lastName;
+    }
+    
+    public String GetMail() {
+    	return mail;
     }
 
     public Policy GetPolicy() {
@@ -54,14 +70,6 @@ public class UserInfo {
 
     public String GetForwardTarget() {
         return forwardTarget;
-    }
-
-    public String GetAddress() {
-        return address;
-    }
-
-    public void SetAddress(String address) {
-        this.address = address;
     }
 
     public double GetBalance() {
