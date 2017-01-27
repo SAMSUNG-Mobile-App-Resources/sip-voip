@@ -33,13 +33,11 @@ public class RequestProcessing {
     	CommunicationsException, ParseException {
 		try{
             console.logEntry();
-    		String username = null;
+            //Edo leipei to username.
+    		String username = "lila";
     		String defaultDomainName =
                     Utils.getProperty("net.java.sip.communicator.sip.DEFAULT_DOMAIN_NAME");
-                if (defaultDomainName != null //no sip scheme
-                    && !username.trim().startsWith("tel:")
-                    && username.indexOf('@') == -1 //most probably a sip uri
-                    ) {
+                if (defaultDomainName != null){
                     username = username + "@" + defaultDomainName;
                 }
                 //Let's be uri fault tolerant
@@ -51,8 +49,11 @@ public class RequestProcessing {
                 
                 //Request URI
                 URI requestURI;
+                System.out.println(defaultDomainName);
+                System.out.println(username);
                 try {
-                    requestURI = sipManCallback.addressFactory.createURI(username);
+                	//TODO : edo skaei
+                    requestURI = SipCommunicator.sipManager.addressFactory.createURI(username);
                 }
                 catch (ParseException ex) {
                     console.error(username + " is not a legal SIP uri!", ex);
@@ -60,10 +61,10 @@ public class RequestProcessing {
                                                       " is not a legal SIP uri!", ex);
                 }
                 
-                CallIdHeader callIdHeader = sipManCallback.sipProvider.getNewCallId();
+                CallIdHeader callIdHeader = SipCommunicator.sipManager.sipProvider.getNewCallId();
                 CSeqHeader cSeqHeader;
                 try {
-                    cSeqHeader = sipManCallback.headerFactory.createCSeqHeader(1,
+                    cSeqHeader = SipCommunicator.sipManager.headerFactory.createCSeqHeader(1,
                     		Request.INFO);
                 }
                 catch (ParseException ex) {
@@ -83,13 +84,13 @@ public class RequestProcessing {
                         + "constructing the CSeqHeadder", ex);
                 }
                 
-                FromHeader fromHeader = sipManCallback.getFromHeader();
-                Address toAddress = sipManCallback.addressFactory.createAddress(
+                FromHeader fromHeader = SipCommunicator.sipManager.getFromHeader();
+                Address toAddress = SipCommunicator.sipManager.addressFactory.createAddress(
                     requestURI);
                 ToHeader toHeader;
                 
                 try {
-                    toHeader = sipManCallback.headerFactory.createToHeader(
+                    toHeader = SipCommunicator.sipManager.headerFactory.createToHeader(
                         toAddress, null);
                 }
                 catch (ParseException ex) {
@@ -100,30 +101,32 @@ public class RequestProcessing {
                         "Null is not an allowed tag for the to header!", ex);
                 }
                 
-                ArrayList viaHeaders = sipManCallback.getLocalViaHeaders();
-                MaxForwardsHeader maxForwards = sipManCallback.getMaxForwardsHeader();
-                ContactHeader contactHeader = sipManCallback.getContactHeader();
+                ArrayList viaHeaders = SipCommunicator.sipManager.getLocalViaHeaders();
+                MaxForwardsHeader maxForwards = SipCommunicator.sipManager.getMaxForwardsHeader();
+                ContactHeader contactHeader = SipCommunicator.sipManager.getContactHeader();
                 Request request = null;
                 ContentTypeHeader contentTypeHeader = null;
                 
                 if(action.equals("BLOCK")){
-                	contentTypeHeader = sipManCallback.headerFactory.createContentTypeHeader("Block", "");
+                	contentTypeHeader = SipCommunicator.sipManager.headerFactory.createContentTypeHeader("Block", "");
                 }
                 else if(action.equals("UNBLOCK")){
-                	contentTypeHeader = sipManCallback.headerFactory.createContentTypeHeader("Unblock", "");
+                	contentTypeHeader = SipCommunicator.sipManager.headerFactory.createContentTypeHeader("Unblock", "");
                 }
                 else if(action.equals("FORWARD")){
-                	contentTypeHeader = sipManCallback.headerFactory.createContentTypeHeader("Forward", "");
+                	contentTypeHeader = SipCommunicator.sipManager.headerFactory.createContentTypeHeader("Forward", "");
                 }
                 else if(action.equals("RFORWARD")){
-                	contentTypeHeader = sipManCallback.headerFactory.createContentTypeHeader("Unforward", "");
+                	contentTypeHeader = SipCommunicator.sipManager.headerFactory.createContentTypeHeader("Unforward", "");
                 }
 
                 try {
-                    request = sipManCallback.messageFactory.createRequest(requestURI,
+                	String empty = "";
+                	byte[] someArray = empty.getBytes();
+                    request = SipCommunicator.sipManager.messageFactory.createRequest(requestURI,
                         Request.INFO,
                         callIdHeader, cSeqHeader, fromHeader, toHeader, viaHeaders,
-                        maxForwards, contentTypeHeader, null);
+                        maxForwards, contentTypeHeader, someArray);
                 }
                 catch (ParseException ex) {
                     console.error(
@@ -137,7 +140,7 @@ public class RequestProcessing {
             Address fromAddress = fromHeader.getAddress();
             ClientTransaction regTrans = null;
             try {
-                regTrans = sipManCallback.sipProvider.getNewClientTransaction(
+                regTrans = SipCommunicator.sipManager.sipProvider.getNewClientTransaction(
                     request);
             }
             catch (TransactionUnavailableException ex) {
@@ -164,10 +167,12 @@ public class RequestProcessing {
 		finally{
 			console.logExit();
 		}
+		System.out.println("ProcessINFO");
 	}
 	
 	void processInfoOK(ClientTransaction clientTransaction, Response response){
 		try{
+			System.out.println("ProcessINFO OK");
             console.logEntry();
             try {
                 Request ack = (Request) clientTransaction.getDialog().
@@ -176,7 +181,7 @@ public class RequestProcessing {
             }
             catch (SipException ex) {
                 console.error("Failed to acknowledge call!", ex);
-                sipManCallback.fireCommunicationsError(new CommunicationsException(
+                SipCommunicator.sipManager.fireCommunicationsError(new CommunicationsException(
                     "Failed to acknowledge call!", ex));
                 return;
             }

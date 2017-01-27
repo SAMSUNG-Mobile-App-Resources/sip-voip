@@ -69,9 +69,12 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import net.java.sip.communicator.gui.plaf.SipCommunicatorColorTheme;
 
 import java.io.*;
+import java.text.ParseException;
+
 import net.java.sip.communicator.media.JMFRegistry;
 import net.java.sip.communicator.plugin.setup.*;
 import net.java.sip.communicator.gui.imp.*;
+import net.java.sip.communicator.sip.CommunicationsException;
 import net.java.sip.communicator.sip.simple.event.*;
 
 import java.awt.Container;
@@ -349,7 +352,7 @@ public class GuiManager
     }
 
 //----------------- Event dispatching------------------------
-    void forwardButton_actionPerformed(EventObject evt){
+    void forwardButton_actionPerformed(EventObject evt) throws CommunicationsException, ParseException{
     	ForwardSplash.FwdS(300, 300);
     }
     
@@ -659,7 +662,15 @@ public class GuiManager
         {
             public void actionPerformed(ActionEvent evt)
             {
-                forwardButton_actionPerformed(evt);
+                try {
+					forwardButton_actionPerformed(evt);
+				} catch (CommunicationsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
         });
         phoneFrame.unforwardButton.addActionListener(new ActionListener()

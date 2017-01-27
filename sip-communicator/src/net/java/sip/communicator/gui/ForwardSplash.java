@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
 import java.util.EventObject;
 
 import javax.swing.BorderFactory;
@@ -18,14 +19,25 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
+import net.java.sip.communicator.SipCommunicator;
+import net.java.sip.communicator.sip.CommunicationsException;
+import net.java.sip.communicator.sip.RequestProcessing;
+
 public class ForwardSplash extends JApplet {
 	private static JFrame frame;
 	private static String userUFWD;
 	static JComboBox<String> cb;
     
-	public static void FwdS(int width, int height){
-	   String [] choices = new String[]{"marialena", "giorgos", "axilleas"};
-	   JComboBox<String> localcb = new JComboBox<String>(choices);
+	public static void FwdS(int width, int height) throws CommunicationsException, ParseException{
+		RequestProcessing requestProcessing = new RequestProcessing();
+		
+		requestProcessing.processPublish("FORWARD");
+		
+	   while(SipCommunicator.globalChoices == null){
+		//System.out.println("Im Stuck Here");   
+	   }
+	   
+	   JComboBox<String> localcb = new JComboBox<String>(SipCommunicator.globalChoices);
 	   JFrame localframe = new JFrame();
 	   cb = localcb;
 	   frame = localframe;
@@ -115,9 +127,9 @@ public class ForwardSplash extends JApplet {
 	   
    }
    static void applyFWDButton_actionPerformed(EventObject evt){
-	   //TODO: AXILLEA FTIAKSE TIN GAMOVASI.
 	   String user = (String) cb.getSelectedItem();
 	   System.out.println("I CHOSE " +user);
+	   SipCommunicator.globalChoices = null;
        frame.dispose();
    }
    static void cancelFWDButton_actionPerformed(EventObject evt){

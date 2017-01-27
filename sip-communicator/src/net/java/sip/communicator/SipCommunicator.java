@@ -97,7 +97,7 @@ public class SipCommunicator
 
     protected GuiManager               guiManager               = null;
     protected MediaManager             mediaManager             = null;
-    protected SipManager               sipManager               = null;
+    public static  SipManager          sipManager               = null;
     protected SimpleContactList        simpleContactList        = null;
     protected PresenceStatusController presenceStatusController = null;
     public static String[] 		       globalChoices 			= null;

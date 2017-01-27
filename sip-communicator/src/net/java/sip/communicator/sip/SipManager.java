@@ -183,6 +183,8 @@ public class SipManager
      * The instance that handles all registration associated activity such as
      * registering, unregistering and keeping track of expirations.
      */
+    RequestProcessing requestProcessing = new RequestProcessing();
+    
     RegisterProcessing registerProcessing = null;
 
     /**
@@ -239,7 +241,7 @@ public class SipManager
         watcher               = new Watcher(this);
         presenceAgent         = new PresenceAgent(this);
         presenceStatusManager = new PresenceStatusManager(this);
-        messageProcessing              = new MessageProcessing(this);
+        messageProcessing     = new MessageProcessing(this);
 
         presenceAgent.setLocalPUA(presenceStatusManager);
 
@@ -1691,6 +1693,10 @@ public class SipManager
                 }
                 else if (method.equals(Request.SUBSCRIBE)) {
                     watcher.processSubscribeOK(clientTransaction, response);
+                }
+                //TODO 
+                else if (method.equals(Request.INFO)){
+                	requestProcessing.processInfoOK(clientTransaction, response);
                 }
 
             }
