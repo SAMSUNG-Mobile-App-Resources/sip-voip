@@ -671,14 +671,16 @@ public class Proxy implements SipListener  {
                     String [] tURI;
                     String [] sURI;
 
-                    temp = targetURI.toString();
-                    tURI = temp.split("@");
-                    tUserName = tURI[0].split(":")[1];
+                    temp = request.getHeader(FromHeader.NAME).toString();
+                    temp = temp.split(":")[2].split("@")[0];
+                    //temp = targetURI.toString();
+                    //tURI = temp.split("@");
+                    //tUserName = tURI[0].split(":")[1];
+                    sUserName = temp;
 
                     temp = requestURI.toString();
-                    System.out.println("DEBUG: This is temp URI: " + temp);
-                    sURI = temp.split("@");
-                    sUserName = sURI[0].split(":")[1];
+                    tURI = temp.split("@");
+                    tUserName = tURI[0].split(":")[1];
 
                     //URI finalURI = database.resolveForward(sUserName, tUserName);
                     FwdRes fwdStatus = database.resolveForward(sUserName, tUserName);

@@ -60,6 +60,7 @@ public class Registrar
     }
 
 
+    //@TODO: change this to return boolean, in case the user already exists
     private void AddToProxyDatabase(Database db, String contentString) {
         String[] userRegistrationInfo = contentString.split(":");
         String username = userRegistrationInfo[0];
@@ -97,6 +98,25 @@ public class Registrar
         }
 
         return true;
+    }
+
+    private void SetNewUri(Database db, String contentString, String uriString) {
+        String[] userLoginInfo = contentString.split(":");
+        String username = userLoginInfo[0];
+        UserInfo user = db.GetUser(username);
+        String sansTransport = uriString.split(";")[0];
+        String[] splitString = sansTransport.split(":");
+        sansTransport = splitString[0] + ":" + splitString[1] + ":" + "5060"; //HACK: this is the preferred port according to the xml
+        URI uri = null;
+
+        try {
+        	uri = (URI) (proxy.getAddressFactory()).createURI(sansTransport);
+        } catch (Exception exc) {
+        	System.out.println("ERROR: Could not set user's new URI");
+        	return;
+        }
+
+        user.SetUserURI(uri);
     }
 
     public void registerToProxies() {
@@ -521,6 +541,9 @@ public class Registrar
 
                             return;
                         }
+                        
+                        String uriString = request.getRequestURI().toString();
+                        SetNewUri(database, contentString, uriString);
                     }
                     
                     //END Registration/login request handling
