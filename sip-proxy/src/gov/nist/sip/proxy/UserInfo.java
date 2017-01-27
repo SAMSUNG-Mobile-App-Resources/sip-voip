@@ -5,7 +5,7 @@ import javax.sip.address.URI;
 import java.util.HashMap;
 
 public class UserInfo {
-    private URI uri;
+    private String uri;
     private String username;
     private String pass;
     private String name;
@@ -36,7 +36,7 @@ public class UserInfo {
         isConnected = false;
     }
 
-    public URI GetUserURI(){
+    public String GetUserURI(){
         return uri;
     }
 
@@ -76,7 +76,7 @@ public class UserInfo {
         return balance;
     }
 
-    public void SetUserURI(URI uri){
+    public void SetUserURI(String uri){
         this.uri = uri;
     }
 

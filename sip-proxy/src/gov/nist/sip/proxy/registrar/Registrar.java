@@ -106,17 +106,10 @@ public class Registrar
         UserInfo user = db.GetUser(username);
         String sansTransport = uriString.split(";")[0];
         String[] splitString = sansTransport.split(":");
-        sansTransport = splitString[0] + ":" + splitString[1] + ":" + "5060"; //HACK: this is the preferred port according to the xml
-        URI uri = null;
+        String uriStringFinal = splitString[0] + ":" + splitString[1];// + ":" + "5060"; //HACK: this is the preferred port according to the xml
 
-        try {
-        	uri = (URI) (proxy.getAddressFactory()).createURI(sansTransport);
-        } catch (Exception exc) {
-        	System.out.println("ERROR: Could not set user's new URI");
-        	return;
-        }
 
-        user.SetUserURI(uri);
+        user.SetUserURI(uriStringFinal);
     }
 
     public void registerToProxies() {
@@ -771,7 +764,36 @@ public class Registrar
     public Vector getContactsURI(Request request) {
         try{
             String key=getKey(request);
+            
+            String keyUN = key.split(":")[1].split("@")[0];
+            String rest = key.split("@")[1];
+            String sUserName = request.getHeader(FromHeader.NAME).toString();
+            sUserName = sUserName.split("<")[1].split("@")[0].split(":")[1];
+            Database.FwdRes fwdStatus = proxy.getDatabase().resolveForward(sUserName, keyUN);
+            
+            if (fwdStatus.GetURI() == null) {
+                int responseType;
+                ServerTransaction serverTransaction = proxy.GetGlobalTransaction();
+                SipProvider sipProvider = proxy.GetGlobalProvider();
+
+                if (fwdStatus.GetStatus() == Database.ForwardingStatus.FWDSTATUS_BLOCKED)
+                    responseType = Response.TEMPORARILY_UNAVAILABLE; //NOTE: maybe this should be "BUSY_HERE"?
+                else
+                    responseType = Response.LOOP_DETECTED;
+
+                Response response = proxy.getMessageFactory().createResponse(responseType, request);
+
+                if (serverTransaction != null)
+                    serverTransaction.sendResponse(response);
+                else
+                    sipProvider.sendResponse(response);
+
+                return null;
+            }
+
+            key = "sip:" + fwdStatus.GetUsername() + "@" + rest;
             Vector contacts=getContactHeaders(key);
+            
             if (contacts==null) return null;
             Vector results=new Vector();
             for (int i=0;i<contacts.size();i++) {

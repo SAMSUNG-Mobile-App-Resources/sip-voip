@@ -170,11 +170,31 @@ public class Proxy implements SipListener  {
 
     /** This is a listener method.
     */
+    /* (non-Javadoc)
+     * @see javax.sip.SipListener#processRequest(javax.sip.RequestEvent)
+     */
+    
+    private SipProvider globalProvider = null;
+    
+    public SipProvider GetGlobalProvider() {
+    	return globalProvider;
+    }
+    
+    
+    private ServerTransaction globalTransaction = null;
+    
+    public ServerTransaction GetGlobalTransaction() {
+    	return globalTransaction;
+    }
+    
     public void processRequest(RequestEvent requestEvent) {
         Request request = requestEvent.getRequest();
 
         SipProvider sipProvider = (SipProvider) requestEvent.getSource();
+        globalProvider = (SipProvider) requestEvent.getSource();
         ServerTransaction serverTransaction=requestEvent.getServerTransaction();
+        globalTransaction = requestEvent.getServerTransaction();
+        
         try {
 
             if (ProxyDebug.debug)
@@ -664,52 +684,62 @@ public class Proxy implements SipListener  {
                             ("Proxy, processRequest(), the target set"+
                              " is the set of the contacts URI from the " +
                              " location service");
-                    targetURI = (URI)targetURIList.firstElement();
+                    
 
-                    //Resolve Forward.
-                    String temp, tUserName, sUserName;
+                    //Resolve Forward (this now happens inside getContactsURI().
+                    /*String temp, tUserName, sUserName;
                     String [] tURI;
                     String [] sURI;
 
-                    temp = request.getHeader(FromHeader.NAME).toString();
-                    temp = temp.split(":")[2].split("@")[0];
-                    //temp = targetURI.toString();
-                    //tURI = temp.split("@");
-                    //tUserName = tURI[0].split(":")[1];
-                    sUserName = temp;
+                    if (request.getMethod().equals("INVITE")) {
+                        temp = request.getHeader(FromHeader.NAME).toString();
+                        temp = temp.split(":")[2].split("@")[0];
+                        //temp = targetURI.toString();
+                        //tURI = temp.split("@");
+                        //tUserName = tURI[0].split(":")[1];
+                        sUserName = temp;
 
-                    temp = requestURI.toString();
-                    tURI = temp.split("@");
-                    tUserName = tURI[0].split(":")[1];
+                        temp = requestURI.toString();
+                        tURI = temp.split("@");
+                        tUserName = tURI[0].split(":")[1];
 
-                    //URI finalURI = database.resolveForward(sUserName, tUserName);
-                    FwdRes fwdStatus = database.resolveForward(sUserName, tUserName);
-                    targetURI = fwdStatus.GetURI();
+                        Database.FwdRes fwdStatus = database.resolveForward(sUserName, tUserName);
+                        //targetURI = fwdStatus.GetURI();
 
-                    if(targetURI == null) {
-                        int responseType;
+                        //if(targetURI == null) {
+                        if (fwdStatus.GetURI() == null) {
+                            int responseType;
 
-                        if (fwdStatus.GetStatus() == ForwardingStatus.FWDSTATUS_BLOCKED)
-                            responseType = Response.TEMPORARILY_UNAVAILABLE; //NOTE: maybe this should be "BUSY_HERE"?
-                        else
-                            responseType = Response.LOOP_DETECTED;
+                            if (fwdStatus.GetStatus() == Database.ForwardingStatus.FWDSTATUS_BLOCKED)
+                                responseType = Response.TEMPORARILY_UNAVAILABLE; //NOTE: maybe this should be "BUSY_HERE"?
+                            else
+                                responseType = Response.LOOP_DETECTED;
 
-                        Response response = messageFactory.createResponse(responseType, request);
+                            Response response = messageFactory.createResponse(responseType, request);
 
-                        if (serverTransaction != null)
-                            serverTransaction.sendResponse(response);
-                        else
-                            sipProvider.sendResponse(response);
+                            if (serverTransaction != null)
+                                serverTransaction.sendResponse(response);
+                            else
+                                sipProvider.sendResponse(response);
 
-                        //return;
-                    }else {
+                            //return;
+                        }else {
+                            targetURI = addressFactory.createURI(fwdStatus.GetURI() + ":" + portString);
+                            targetURIList = new Vector();
+                            targetURIList.addElement(targetURI);
+                            requestForwarding.forwardRequest(targetURIList,sipProvider,
+                                    request,serverTransaction,true);
+                            return;
+                        }
+                    } else if (request.getMethod().equals("ACK")) {
                         targetURIList = new Vector();
                         targetURIList.addElement(targetURI);
                         requestForwarding.forwardRequest(targetURIList,sipProvider,
                                 request,serverTransaction,true);
                         return;
-                    }
+                    }*/
 
+                    //URI finalURI = database.resolveForward(sUserName, tUserName);
 
                     /*
                     //  ECE355 Changes - Aug. 2005.
@@ -794,16 +824,16 @@ public class Proxy implements SipListener  {
 
                     }
 
-                // End of ECE355 change
+                    // End of ECE355 change
 
-                */
+                    */
 
                     // 4. Forward the request statefully to each target Section 16.6.:
-                    //requestForwarding.forwardRequest
-                    //(targetURIList,sipProvider,
-                    // request,serverTransaction,true);
+                    requestForwarding.forwardRequest
+                    (targetURIList,sipProvider,
+                     request,serverTransaction,true);
 
-                return;
+                    return;
                 } else {
                     // Let's continue and try the default hop.
                 }

@@ -4,27 +4,36 @@ import java.util.Vector;
 import javax.sip.address.URI;
 import java.util.HashMap;
 
+/*
 enum ForwardingStatus {
     FWDSTATUS_OK, FWDSTATUS_BLOCKED, FWDSTATUS_LOOP
 }
 
 class FwdRes {
     private ForwardingStatus status;
-    private URI finalURI;
+    private String finalUsername;
+    private String finalURI;
 
-    FwdRes(ForwardingStatus status, URI finalURI) {
+    FwdRes(ForwardingStatus status, String finalURI, String finalUsername) {
         this.status = status;
         this.finalURI = finalURI;
+        this.finalUsername = finalUsername;
     }
 
     ForwardingStatus GetStatus() {
         return status;
     }
 
-    URI GetURI() {
+    String GetURI() {
         return finalURI;
     }
+    
+    String GetUsername() {
+        return finalUsername;
+    }
+    
 }
+*/
 
 enum Action {
     ACTION_BLOCK, ACTION_UNBLOCK, ACTION_FORWARD, ACTION_FRESET, ACTION_BALCHARGE, ACTION_BALINCR
@@ -33,18 +42,49 @@ enum Action {
 public class Database {
     private HashMap<String, UserInfo> activeDatabase;
 
+    public enum ForwardingStatus {
+        FWDSTATUS_OK, FWDSTATUS_BLOCKED, FWDSTATUS_LOOP
+    }
+
+    public class FwdRes {
+        private ForwardingStatus status;
+        private String finalUsername;
+        private String finalURI;
+
+        FwdRes(ForwardingStatus status, String finalURI, String finalUsername) {
+            this.status = status;
+            this.finalURI = finalURI;
+            this.finalUsername = finalUsername;
+        }
+
+        public ForwardingStatus GetStatus() {
+            return status;
+        }
+
+        public String GetURI() {
+            return finalURI;
+        }
+
+        public String GetUsername() {
+            return finalUsername;
+        }
+
+    }
+
+
     public Database(){
         activeDatabase = new HashMap<String, UserInfo>();
 
         //NOTE: For debugging only, remove later
-        
+
         UserInfo user1 = new UserInfo("fellos", "8cb2237d0679ca88db6464eac60da96345513964", "giorgos", "pantavlakopoulos", "george@vlakas.com", UserInfo.Policy.POLICY_A);
         UserInfo user2 = new UserInfo("piofellos", "8cb2237d0679ca88db6464eac60da96345513964", "marialena", "fragkaki", "maria@elena.com", UserInfo.Policy.POLICY_A);
         UserInfo user3 = new UserInfo("ipiosfellos", "8cb2237d0679ca88db6464eac60da96345513964", "theos", "panemorfos", "opioomorfos@theos.com", UserInfo.Policy.POLICY_B);
 
+        user1.ForwardTo("ipiosfellos");
         activeDatabase.put(user1.GetUserName(), user1); 
         activeDatabase.put(user2.GetUserName(), user2); 
-        activeDatabase.put(user2.GetUserName(), user3); 
+        activeDatabase.put(user3.GetUserName(), user3); 
     }
 
     public boolean InsertUser(UserInfo user) {
@@ -58,21 +98,21 @@ public class Database {
 
         return true;
     }
-    
+
     public UserInfo GetUser(String username) {
-    	if (activeDatabase.containsKey(username))
-    		return activeDatabase.get(username);
-    	else
-    		return null;
+        if (activeDatabase.containsKey(username))
+            return activeDatabase.get(username);
+        else
+            return null;
     }
-    
+
     public Vector<String> GetAllUsers() {
-    	Vector<String> res = new Vector<String>();
-    	for (HashMap.Entry<String, UserInfo> entry : activeDatabase.entrySet()) {
-    		res.add(entry.getKey());
-    	}
-    	
-    	return res;
+        Vector<String> res = new Vector<String>();
+        for (HashMap.Entry<String, UserInfo> entry : activeDatabase.entrySet()) {
+            res.add(entry.getKey());
+        }
+
+        return res;
     }
 
     public boolean Delete(String username) {
@@ -152,32 +192,33 @@ public class Database {
 
         if (v.GetForwardTarget() == null){
             if(blocked.contains(source)) {
-                return new FwdRes(ForwardingStatus.FWDSTATUS_BLOCKED, null);
+                return new FwdRes(ForwardingStatus.FWDSTATUS_BLOCKED, null, null);
                 //return null;
             }else {
-                return new FwdRes(ForwardingStatus.FWDSTATUS_OK, v.GetUserURI());
+                return new FwdRes(ForwardingStatus.FWDSTATUS_OK, v.GetUserURI(), v.GetUserName());
                 //return v.GetUserURI();
             }
         }else {
-            intermediateTargets.add(v.GetUserName());
-            v = activeDatabase.get(v.GetForwardTarget());
+            intermediateTargets.add(source);
+            //intermediateTargets.add(v.GetUserName());
+            //v = activeDatabase.get(v.GetForwardTarget());
 
             while (v.GetForwardTarget() != null) {
                 intermediateTargets.add(v.GetUserName());
                 v = activeDatabase.get(v.GetForwardTarget());
 
                 if (intermediateTargets.contains(v.GetUserName())) //cycle detected
-                    return new FwdRes(ForwardingStatus.FWDSTATUS_LOOP, null);
-                    //return null;
+                    return new FwdRes(ForwardingStatus.FWDSTATUS_LOOP, null, null);
+                //return null;
             }
 
             blocked = v.GetBlockedUsers();
 
             if (!blocked.contains(source)) {
-                return new FwdRes(ForwardingStatus.FWDSTATUS_OK, v.GetUserURI());
+                return new FwdRes(ForwardingStatus.FWDSTATUS_OK, v.GetUserURI(), v.GetUserName());
                 //return v.GetUserURI();
             }else
-                return new FwdRes(ForwardingStatus.FWDSTATUS_BLOCKED, null);
+                return new FwdRes(ForwardingStatus.FWDSTATUS_BLOCKED, null, null);
         }
 
         //return null;
