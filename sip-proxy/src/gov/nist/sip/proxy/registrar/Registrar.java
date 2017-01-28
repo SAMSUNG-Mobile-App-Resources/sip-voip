@@ -421,6 +421,7 @@ public class Registrar
                             ("Registrar, processRegister(), (* and expires=0) "+
                              " we remove the registration!!");
                     }
+                    
                     registrationsTable.removeRegistration(key);
 
                     Response response=messageFactory.createResponse
@@ -439,8 +440,11 @@ public class Registrar
                 }
 
 
-                if ( registrationsTable.hasRegistration(key) ) {
+                if ( registrationsTable.hasRegistration(key) ) { //TODO: here
                     registrationsTable.updateRegistration(key,request);
+                    
+                    String username = key.split("@")[0].split(":")[1];
+                    database.GetUser(username).UserWentOffline();
 
                     if (  proxy.getConfiguration().rfc2543Compatible &&
                             key.indexOf(":5060") < 0 ) {
@@ -534,7 +538,11 @@ public class Registrar
 
                             return;
                         }
-                        
+
+                        String[] userLoginInfo = contentString.split(":");
+                        String username = userLoginInfo[0];
+
+                        database.GetUser(username).UserCameOnline();
                         String uriString = request.getRequestURI().toString();
                         SetNewUri(database, contentString, uriString);
                     }

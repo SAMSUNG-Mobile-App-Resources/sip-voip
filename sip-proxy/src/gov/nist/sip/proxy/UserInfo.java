@@ -2,9 +2,8 @@ package gov.nist.sip.proxy;
 
 import java.util.Vector;
 import javax.sip.address.URI;
-import java.util.HashMap;
 
-public class UserInfo {
+public class UserInfo implements java.io.Serializable {
     private String uri;
     private String username;
     private String pass;
@@ -21,7 +20,7 @@ public class UserInfo {
         POLICY_A, POLICY_B, POLICY_C
     }
 
-    
+
     public UserInfo(String username, String pass, String name, String lastName, String mail, Policy billingPolicy) {
         this.username = username;
         this.pass = pass;
@@ -43,17 +42,17 @@ public class UserInfo {
     public String GetUserName() {
         return username;
     }
-    
+
     public String GetName() {
-    	return name;
+        return name;
     }
-    
+
     public String GetLastName() {
-    	return lastName;
+        return lastName;
     }
-    
+
     public String GetMail() {
-    	return mail;
+        return mail;
     }
 
     public Policy GetPolicy() {
@@ -97,13 +96,13 @@ public class UserInfo {
     public void ClearFwd() {
         this.forwardTarget = null;
     }
-    
+
     public void UserCameOnline() {
-    	this.isConnected = true;
+        this.isConnected = true;
     }
-    
+
     public void UserWentOffline() {
-    	this.isConnected = false;
+        this.isConnected = false;
     }
 
     public void UpdateBalance(double amount, Action action) {
@@ -115,8 +114,22 @@ public class UserInfo {
                 this.balance += amount;
                 break;
             default:
-            	System.out.println("ERROR: In UserInfo.UpdateBalance with an invalid action\n");
-            	break;
+                System.out.println("ERROR: In UserInfo.UpdateBalance with an invalid action\n");
+                break;
         }
     }
+
+
+    /*
+    private void writeObject(java.io.ObjectOutputStream out)
+        throws IOException {
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+    }
+
+    private void readObjectNoData() 
+        throws ObjectStreamException {
+    }*/
 }

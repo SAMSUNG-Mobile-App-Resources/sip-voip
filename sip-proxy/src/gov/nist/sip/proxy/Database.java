@@ -1,39 +1,15 @@
 package gov.nist.sip.proxy;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Vector;
+
 import javax.sip.address.URI;
+
 import java.util.HashMap;
-
-/*
-enum ForwardingStatus {
-    FWDSTATUS_OK, FWDSTATUS_BLOCKED, FWDSTATUS_LOOP
-}
-
-class FwdRes {
-    private ForwardingStatus status;
-    private String finalUsername;
-    private String finalURI;
-
-    FwdRes(ForwardingStatus status, String finalURI, String finalUsername) {
-        this.status = status;
-        this.finalURI = finalURI;
-        this.finalUsername = finalUsername;
-    }
-
-    ForwardingStatus GetStatus() {
-        return status;
-    }
-
-    String GetURI() {
-        return finalURI;
-    }
-    
-    String GetUsername() {
-        return finalUsername;
-    }
-    
-}
-*/
 
 enum Action {
     ACTION_BLOCK, ACTION_UNBLOCK, ACTION_FORWARD, ACTION_FRESET, ACTION_BALCHARGE, ACTION_BALINCR
@@ -73,18 +49,19 @@ public class Database {
 
 
     public Database(){
-        activeDatabase = new HashMap<String, UserInfo>();
+        if (!ReadFromDisk()) { //will try to read from "db.ser" in sip-proxy directory, remove file if unwanted
+            activeDatabase = new HashMap<String, UserInfo>();
 
-        //NOTE: For debugging only, remove later
+            //NOTE: For debugging only, remove later
 
-        UserInfo user1 = new UserInfo("fellos", "8cb2237d0679ca88db6464eac60da96345513964", "giorgos", "pantavlakopoulos", "george@vlakas.com", UserInfo.Policy.POLICY_A);
-        UserInfo user2 = new UserInfo("piofellos", "8cb2237d0679ca88db6464eac60da96345513964", "marialena", "fragkaki", "maria@elena.com", UserInfo.Policy.POLICY_A);
-        UserInfo user3 = new UserInfo("ipiosfellos", "8cb2237d0679ca88db6464eac60da96345513964", "theos", "panemorfos", "opioomorfos@theos.com", UserInfo.Policy.POLICY_B);
+            UserInfo user1 = new UserInfo("fellos", "8cb2237d0679ca88db6464eac60da96345513964", "giorgos", "pantavlakopoulos", "george@vlakas.com", UserInfo.Policy.POLICY_A);
+            UserInfo user2 = new UserInfo("piofellos", "8cb2237d0679ca88db6464eac60da96345513964", "marialena", "fragkaki", "maria@elena.com", UserInfo.Policy.POLICY_A);
+            UserInfo user3 = new UserInfo("ipiosfellos", "8cb2237d0679ca88db6464eac60da96345513964", "theos", "panemorfos", "opioomorfos@theos.com", UserInfo.Policy.POLICY_B);
 
-        user1.ForwardTo("ipiosfellos");
-        activeDatabase.put(user1.GetUserName(), user1); 
-        activeDatabase.put(user2.GetUserName(), user2); 
-        activeDatabase.put(user3.GetUserName(), user3); 
+            activeDatabase.put(user1.GetUserName(), user1); 
+            activeDatabase.put(user2.GetUserName(), user2); 
+            activeDatabase.put(user3.GetUserName(), user3);
+        }
     }
 
     public boolean InsertUser(UserInfo user) {
@@ -179,6 +156,8 @@ public class Database {
                 v.UpdateBalance(balance, action);
                 break;
         }
+        
+        WriteToDisk();
 
         return true;
     }
@@ -222,5 +201,40 @@ public class Database {
         }
 
         //return null;
+    }
+
+    private void WriteToDisk() {
+        try {
+            FileOutputStream fos = new FileOutputStream("db.ser");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+           
+            oos.writeObject(activeDatabase);
+            oos.close();
+            fos.close();
+            
+            System.out.println("Serialized HashMap data is saved in db.ser");
+        }catch(IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
+    private boolean ReadFromDisk() {
+        try {
+            FileInputStream fis = new FileInputStream("db.ser");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            
+            activeDatabase = (HashMap<String, UserInfo>) ois.readObject();
+            ois.close();
+            fis.close();
+            
+            return true;
+        }catch(IOException ioe) {
+            ioe.printStackTrace();
+            return false;
+        }catch(ClassNotFoundException c) {
+            System.out.println("Class not found");
+            c.printStackTrace();
+            return false;
+        } 
     }
 }
