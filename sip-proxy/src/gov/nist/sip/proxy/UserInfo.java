@@ -20,7 +20,6 @@ public class UserInfo implements java.io.Serializable {
         POLICY_A, POLICY_B, POLICY_C
     }
 
-
     public UserInfo(String username, String pass, String name, String lastName, String mail, Policy billingPolicy) {
         this.username = username;
         this.pass = pass;
@@ -119,17 +118,31 @@ public class UserInfo implements java.io.Serializable {
         }
     }
 
+    public double CalculateCharge(long time) {
+        long timeSecs = time / 1000; //time arg is in msecs
+        double res = 0;
 
-    /*
-    private void writeObject(java.io.ObjectOutputStream out)
-        throws IOException {
+        switch (billingPolicy) {
+            case POLICY_A:
+                if (timeSecs > 120)
+                    res = 120 * 0.01 + (timeSecs - 120) * 0.1;
+                else
+                    res = timeSecs * 0.01;
+                break;
+            case POLICY_B:
+                if (timeSecs > 480)
+                    res = 480 * 0.01 + (timeSecs - 480) * 0.2;
+                else
+                    res = timeSecs * 0.01;
+                break;
+            case POLICY_C:
+                if (timeSecs > 1200)
+                    res = 1200 * 0.01 + (timeSecs - 1200) * 0.3;
+                else
+                    res = timeSecs * 0.01;
+                break;
+        }
+
+        return res;
     }
-
-    private void readObject(java.io.ObjectInputStream in)
-        throws IOException, ClassNotFoundException {
-    }
-
-    private void readObjectNoData() 
-        throws ObjectStreamException {
-    }*/
 }

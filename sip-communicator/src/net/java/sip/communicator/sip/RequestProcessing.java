@@ -36,8 +36,8 @@ public class RequestProcessing {
             		return;
             	
                 console.logEntry();
-                //Edo leipei to username.
-                String username = "fellos";
+                String username = Utils.getProperty(
+                        "net.java.sip.communicator.sip.USER_NAME");
                 String defaultDomainName =
                     Utils.getProperty("net.java.sip.communicator.sip.DEFAULT_DOMAIN_NAME");
                 if (defaultDomainName != null){

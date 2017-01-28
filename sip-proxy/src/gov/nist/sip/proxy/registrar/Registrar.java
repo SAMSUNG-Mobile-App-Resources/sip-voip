@@ -421,7 +421,7 @@ public class Registrar
                             ("Registrar, processRegister(), (* and expires=0) "+
                              " we remove the registration!!");
                     }
-                    
+
                     registrationsTable.removeRegistration(key);
 
                     Response response=messageFactory.createResponse
@@ -442,7 +442,7 @@ public class Registrar
 
                 if ( registrationsTable.hasRegistration(key) ) { //TODO: here
                     registrationsTable.updateRegistration(key,request);
-                    
+
                     String username = key.split("@")[0].split(":")[1];
                     database.GetUser(username).UserWentOffline();
 
@@ -514,7 +514,7 @@ public class Registrar
                     //assume that register request contains registration info
 
                     // Registration/login request handling
-                    
+
                     if (request.getHeader(ContentTypeHeader.NAME).toString().split(":")[1].trim().split("/")[0].equals( "Registration")) {
                         String contentString;
                         contentString = new String(request.getRawContent());
@@ -524,7 +524,7 @@ public class Registrar
                     else if (request.getHeader(ContentTypeHeader.NAME).toString().split(":")[1].trim().split("/")[0].equals("Login")) {
                         String contentString;
                         contentString = new String(request.getRawContent());
-                        
+
                         System.out.println(contentString);
                         if (!ValidLoginInfo(database, contentString)) {
                             System.out.println("ERROR: User supplied wrong data");
@@ -546,9 +546,9 @@ public class Registrar
                         String uriString = request.getRequestURI().toString();
                         SetNewUri(database, contentString, uriString);
                     }
-                    
+
                     //END Registration/login request handling
-                    
+
                     registrationsTable.addRegistration(key,request);
 
                     if (proxy.getConfiguration().rfc2543Compatible &&
@@ -772,13 +772,13 @@ public class Registrar
     public Vector getContactsURI(Request request) {
         try{
             String key=getKey(request);
-            
+
             String keyUN = key.split(":")[1].split("@")[0];
             String rest = key.split("@")[1];
             String sUserName = request.getHeader(FromHeader.NAME).toString();
             sUserName = sUserName.split("<")[1].split("@")[0].split(":")[1];
             Database.FwdRes fwdStatus = proxy.getDatabase().resolveForward(sUserName, keyUN);
-            
+
             if (fwdStatus.GetURI() == null) {
                 int responseType;
                 ServerTransaction serverTransaction = proxy.GetGlobalTransaction();
@@ -801,7 +801,7 @@ public class Registrar
 
             key = "sip:" + fwdStatus.GetUsername() + "@" + rest;
             Vector contacts=getContactHeaders(key);
-            
+
             if (contacts==null) return null;
             Vector results=new Vector();
             for (int i=0;i<contacts.size();i++) {

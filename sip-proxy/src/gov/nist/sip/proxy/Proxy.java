@@ -59,6 +59,7 @@ public class Proxy implements SipListener  {
     protected RequestForwarding requestForwarding;
     protected ResponseForwarding responseForwarding;
     protected Database database;
+    protected CallRecord callRecord;
 
 
     public Database getDatabase() {
@@ -125,6 +126,22 @@ public class Proxy implements SipListener  {
     }
 
 
+    private void RegisterCall(String callID, Response response) {
+        String fromHeader = response.getHeader(FromHeader.NAME).toString();
+        String caller = fromHeader.split(":")[2].split("@")[0];
+
+        callRecord.RegisterNewCall(callID, caller);
+    }
+
+    private void ChargeCall(String callID) {
+        CallRecord.CallInfo callToCharge = callRecord.GetCallForCharging(callID);
+        String caller = callToCharge.GetCaller();
+        double charge = database.GetUser(caller).CalculateCharge(callToCharge.GetTime());
+
+        database.Update(Action.ACTION_BALCHARGE, caller, null, charge);
+    }
+
+
     /** Creates new Proxy */
     public Proxy(String confFile) throws Exception{
 
@@ -158,6 +175,7 @@ public class Proxy implements SipListener  {
                     requestForwarding=new RequestForwarding(this);
                     responseForwarding=new ResponseForwarding(this);
                     database = new Database();
+                    callRecord = new CallRecord();
                 }
             }
             catch (Exception ex) {
@@ -177,29 +195,29 @@ public class Proxy implements SipListener  {
     /* (non-Javadoc)
      * @see javax.sip.SipListener#processRequest(javax.sip.RequestEvent)
      */
-    
+
     private SipProvider globalProvider = null;
-    
+
     public SipProvider GetGlobalProvider() {
-    	return globalProvider;
+        return globalProvider;
     }
-    
-    
+
+
     private ServerTransaction globalTransaction = null;
-    
+
     public ServerTransaction GetGlobalTransaction() {
-    	return globalTransaction;
+        return globalTransaction;
     }
-    
-    
+
+
     private String GetUsernameFromUriString(String uriString) {
         String[] temp = uriString.split("@");
         String username = temp[0].split(":")[1];
-    	return username;
+        return username;
     }
-    
+
     private byte[] GetByteArray(Vector<String> originalArray, Vector<String> toRemove) {
-    	Vector<String> filtered = (Vector<String>) originalArray.clone();
+        Vector<String> filtered = (Vector<String>) originalArray.clone();
 
         if (toRemove != null) {
             for (String entry : toRemove) {
@@ -218,10 +236,10 @@ public class Proxy implements SipListener  {
             tempString = "(empty)";
 
         byte[] res = tempString.getBytes(Charset.forName("UTF-8"));
-    	
-    	return res;
+
+        return res;
     }
-    
+
     public void processRequest(RequestEvent requestEvent) {
         Request request = requestEvent.getRequest();
 
@@ -229,7 +247,7 @@ public class Proxy implements SipListener  {
         globalProvider = (SipProvider) requestEvent.getSource();
         ServerTransaction serverTransaction=requestEvent.getServerTransaction();
         globalTransaction = requestEvent.getServerTransaction();
-        
+
         try {
 
             if (ProxyDebug.debug)
@@ -548,7 +566,7 @@ public class Proxy implements SipListener  {
                 Vector<String> allUsers = database.GetAllUsers();
 
                 if (typeOfPublish.equals("Block") || typeOfPublish.equals("Forward")) {
-                	if (subtype.equals("B")) {
+                    if (subtype.equals("B")) {
                         Vector<String> blockedUsers = (Vector<String>) (database.GetUser(username).GetBlockedUsers()).clone();
                         blockedUsers.add(username);
 
@@ -794,7 +812,7 @@ public class Proxy implements SipListener  {
                             ("Proxy, processRequest(), the target set"+
                              " is the set of the contacts URI from the " +
                              " location service");
-                    
+
 
                     //Resolve Forward (this now happens inside getContactsURI().
                     /*String temp, tUserName, sUserName;
@@ -1060,6 +1078,23 @@ public class Proxy implements SipListener  {
                 //presenceServer.processNotifyResponse((Response)response.clone(), clientTransaction);
             }
 
+            CallIdHeader callIdHeader = (CallIdHeader) response.getHeader(CallIdHeader.NAME);
+
+            if (callIdHeader != null) {
+                String callID = callIdHeader.toString().split(":")[1].replaceAll("[\u0000-\u001f]", "");
+                CSeqHeader cseq = (CSeqHeader) response.getHeader(CSeqHeader.NAME);
+                String cseqString = cseq.toString().split(" ")[2].replaceAll("[\u0000-\u001f]", "");
+
+                if (cseqString.equals("INVITE") && response.getReasonPhrase().equals("OK")) { //establish call
+                    RegisterCall(callID, response);
+                    //callRecord.RegisterNewCall(callId, caller);
+                    //set up a new call to be charged
+                } else if (cseqString.equals("BYE") && response.getReasonPhrase().equals("OK")) {
+                    ChargeCall(callID);
+                    //charge call
+                }
+            }
+
             responseForwarding.forwardResponse(sipProvider, response,clientTransaction);
 
         } catch (Exception ex) {
@@ -1136,7 +1171,7 @@ public class Proxy implements SipListener  {
 
 
     /***********************  Methods for         ***************
-     *    starting and stopping the proxy          		*
+     *    starting and stopping the proxy               *
      ************************************************************/
 
     /** Start the proxy, this method has to be called after the init method
