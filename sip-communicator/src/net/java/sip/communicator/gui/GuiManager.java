@@ -365,7 +365,7 @@ public class GuiManager
     }
     
     void unblockButton_actionPerformed(EventObject evt){
-    	BlockSplash.Block(300, 300);
+    	BlockSplash.UnBlock(300, 300);
     }
     
     void dialButton_actionPerformed(EventObject evt)

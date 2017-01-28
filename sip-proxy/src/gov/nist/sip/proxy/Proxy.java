@@ -7,11 +7,15 @@ import javax.sip.*;
 import javax.sip.message.*;
 import javax.sip.header.*;
 import javax.sip.address.*;
+
 import gov.nist.sip.proxy.registrar.*;
+
 import java.text.ParseException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+
 import gov.nist.sip.proxy.authentication.*;
 import gov.nist.sip.proxy.presenceserver.*;
 import gov.nist.sip.proxy.router.*;
@@ -185,6 +189,37 @@ public class Proxy implements SipListener  {
     
     public ServerTransaction GetGlobalTransaction() {
     	return globalTransaction;
+    }
+    
+    
+    private String GetUsernameFromUriString(String uriString) {
+        String[] temp = uriString.split("@");
+        String username = temp[0].split(":")[1];
+    	return username;
+    }
+    
+    private byte[] GetByteArray(Vector<String> originalArray, Vector<String> toRemove) {
+    	Vector<String> filtered = (Vector<String>) originalArray.clone();
+
+        if (toRemove != null) {
+            for (String entry : toRemove) {
+                if (filtered.contains(entry))
+                    filtered.remove(entry);
+            }
+        }
+
+        String tempString = new String();
+
+        if (!filtered.isEmpty()) {
+            for (String entry : filtered) {
+                tempString += entry + "/:/";
+            }
+        } else
+            tempString = "(empty)";
+
+        byte[] res = tempString.getBytes(Charset.forName("UTF-8"));
+    	
+    	return res;
     }
     
     public void processRequest(RequestEvent requestEvent) {
@@ -499,7 +534,82 @@ public class Proxy implements SipListener  {
                 return;
             }
 
+            if (request.getMethod().equals(Request.INFO)) {
+                if (ProxyDebug.debug)
+                    ProxyDebug.println("Incoming request Register");
 
+                String fullContentTypeHeader = request.getHeader(ContentTypeHeader.NAME).toString();
+                String typeOfPublish = fullContentTypeHeader.split("/")[0].split(":")[1].trim();
+                String subtype = fullContentTypeHeader.split("/")[1].trim();
+                String username = GetUsernameFromUriString(request.getRequestURI().toString());
+                String empty = "";
+                byte[] responseBody = null;
+
+                Vector<String> allUsers = database.GetAllUsers();
+
+                if (typeOfPublish.equals("Block") || typeOfPublish.equals("Forward")) {
+                	if (subtype.equals("B")) {
+                        Vector<String> blockedUsers = (Vector<String>) (database.GetUser(username).GetBlockedUsers()).clone();
+                        blockedUsers.add(username);
+
+                        responseBody = GetByteArray(allUsers, blockedUsers);
+                    }else {
+                        String choice = new String(request.getRawContent());
+
+                        if (typeOfPublish.equals("Block")) {
+                            database.Update(Action.ACTION_BLOCK, username, choice, 0);
+                        } else {
+                            database.Update(Action.ACTION_FORWARD, username, choice, 0);
+                        }
+
+                        responseBody = empty.getBytes();
+                    }
+                }else if (typeOfPublish.equals("Unblock")) {
+                    if (subtype.equals("B")) {
+                        Vector<String> blockedUsers = database.GetUser(username).GetBlockedUsers();
+
+                        if (blockedUsers == null) {
+                            String none = "(empty)";
+
+                            responseBody = none.getBytes();
+                        }else
+                            responseBody = GetByteArray(blockedUsers, null);
+                    }else {
+                        String choice = new String(request.getRawContent());
+
+                        database.Update(Action.ACTION_UNBLOCK, username, choice, 0);
+                        responseBody = empty.getBytes();
+                    }
+                }else if (typeOfPublish.equals("Unforward")) {
+                    if (subtype.equals("B")) {
+                        String fwdTarget = database.GetUser(username).GetForwardTarget();
+
+                        if (fwdTarget == null) {
+                            String none = "(empty)";
+
+                            responseBody = none.getBytes();
+                        }else {
+                            responseBody = fwdTarget.getBytes();
+                        }
+                    }else {
+                        //String choice = new String(request.getRawContent()); //we don't even use this...
+
+                        database.Update(Action.ACTION_FRESET, username, null, 0);
+                        responseBody = empty.getBytes();
+                    }
+
+                }
+
+                ContentTypeHeader responseTypeHeader = headerFactory.createContentTypeHeader(typeOfPublish, subtype);
+                Response response = messageFactory.createResponse(Response.OK, request, responseTypeHeader, responseBody);
+
+                if (serverTransaction != null)
+                    serverTransaction.sendResponse(response);
+                else
+                    sipProvider.sendResponse(response);
+
+                return;
+            }
 
             /* If we receive a subscription targeted to a user that
              * is publishing its state here, send to presence server
