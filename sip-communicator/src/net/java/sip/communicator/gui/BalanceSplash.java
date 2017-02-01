@@ -86,13 +86,13 @@ public class BalanceSplash {
 
     }
     static void applyBalanceButton_actionPerformed(EventObject evt) {
-        String user = (String) cb.getSelectedItem();
-        System.out.println("I CHOSE " + user);
+        String amount = (String) cb.getSelectedItem();
+        System.out.println("I WILL ADD " + amount + " DOLLARS");
 
         RequestProcessing requestProcessing = new RequestProcessing();
 
         try {
-            requestProcessing.processInfo("BALANCE", user);
+            requestProcessing.processInfo("BALANCE", amount);
         } catch (Exception exc) {
             return;
         }

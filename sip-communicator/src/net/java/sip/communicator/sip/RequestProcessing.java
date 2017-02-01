@@ -205,7 +205,7 @@ public class RequestProcessing {
             }*/
 
             String fullContentTypeHeader = response.getHeader(ContentTypeHeader.NAME).toString();
-            String type = fullContentTypeHeader.split("/")[0].trim();
+            String type = fullContentTypeHeader.split("/")[0].split(":")[1].trim();
             String subtype = fullContentTypeHeader.split("/")[1].trim();
             
           

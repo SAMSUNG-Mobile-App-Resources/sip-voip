@@ -615,7 +615,19 @@ public class Proxy implements SipListener  {
                         database.Update(Action.ACTION_FRESET, username, null, 0);
                         responseBody = empty.getBytes();
                     }
+                }else if (typeOfPublish.equals("Balance")) {
+                    if (subtype.equals("B")) {
+                        double balance = database.GetUser(username).GetBalance();
+                        String balanceString = Double.toString(balance);
 
+                        responseBody = balanceString.getBytes();
+                    }else {
+                        String amountToAddString = new String(request.getRawContent()); //we don't even use this...
+                        double amountToAdd = Double.parseDouble(amountToAddString);
+
+                        database.Update(Action.ACTION_BALINCR, username, null, amountToAdd);
+                        responseBody = empty.getBytes();
+                    }
                 }
 
                 ContentTypeHeader responseTypeHeader = headerFactory.createContentTypeHeader(typeOfPublish, subtype);
