@@ -140,7 +140,16 @@ public class Proxy implements SipListener  {
 
         database.Update(Action.ACTION_BALCHARGE, caller, null, charge);
     }
-
+    
+    private boolean CanMakeCall(Request request) {
+    	String fromHeaderString = request.getHeader(FromHeader.NAME).toString();
+    	String caller = fromHeaderString.split(":")[2].split("@")[0];
+    	
+    	if (database.GetUser(caller).GetBalance() < 0.0)
+    		return false;
+    	
+    	return true;
+    }
 
     /** Creates new Proxy */
     public Proxy(String confFile) throws Exception{
@@ -825,7 +834,18 @@ public class Proxy implements SipListener  {
                              " is the set of the contacts URI from the " +
                              " location service");
 
+                    if (!CanMakeCall(request)) {
+                    	Response response = messageFactory.createResponse(
+                    			Response.PAYMENT_REQUIRED, request);
 
+                    	if (serverTransaction != null)
+                    		serverTransaction.sendResponse(response);
+                    	else
+                    		sipProvider.sendResponse(response);
+                    	
+                    	return;
+                    }
+                    
                     //Resolve Forward (this now happens inside getContactsURI().
                     /*String temp, tUserName, sUserName;
                     String [] tURI;
