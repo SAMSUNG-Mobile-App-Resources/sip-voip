@@ -97,6 +97,7 @@ class PhoneFrame
     JButton blockButton = new JButton();
     JButton unforwardButton = new JButton();
     JButton unblockButton = new JButton();
+    JButton balanceButton = new JButton();
     GridLayout gridLayout1 = new GridLayout(3, 2);
     
     Border border6;
@@ -205,6 +206,10 @@ class PhoneFrame
         unblockButton.setMnemonic('U');
         unblockButton.setText("Unblock");
         
+        balanceButton.setEnabled(false);
+        balanceButton.setMnemonic('B');
+        balanceButton.setText("Balance");
+        
         callControlButtons.setLayout(gridLayout1);
         gridLayout1.setHgap(10);
         gridLayout1.setVgap(10);
@@ -250,6 +255,7 @@ class PhoneFrame
         callControlButtons.add(unforwardButton, null);
         callControlButtons.add(blockButton, null);
         callControlButtons.add(unblockButton, null);
+        callControlButtons.add(balanceButton, null);
        
         
         controlPanel.add(participantsScroll,  BorderLayout.CENTER);

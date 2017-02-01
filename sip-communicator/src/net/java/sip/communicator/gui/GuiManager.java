@@ -301,6 +301,7 @@ public class GuiManager
         phoneFrame.blockButton.setEnabled(enabled);
         phoneFrame.unforwardButton.setEnabled(enabled);
         phoneFrame.unblockButton.setEnabled(enabled);
+        phoneFrame.balanceButton.setEnabled(enabled);
     }
 
     public void addUserActionListener(UserActionListener l)
@@ -354,6 +355,10 @@ public class GuiManager
 //----------------- Event dispatching------------------------
     void forwardButton_actionPerformed(EventObject evt) throws CommunicationsException, ParseException{
     	ForwardSplash.FwdS(300, 300);
+    }
+    
+    void balanceButton_actionPerformed(EventObject evt) throws CommunicationsException, ParseException{
+    	BalanceSplash.ShowBalance(300, 300);
     }
     
     void unforwardButton_actionPerformed(EventObject evt){
@@ -673,6 +678,23 @@ public class GuiManager
 				}
             }
         });
+        
+        phoneFrame.balanceButton.addActionListener(new ActionListener()
+        {
+        	public void actionPerformed(ActionEvent evt)
+            {
+                try {
+					balanceButton_actionPerformed(evt);
+				} catch (CommunicationsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            }
+        });  
+        
         phoneFrame.unforwardButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)

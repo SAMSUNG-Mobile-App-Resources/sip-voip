@@ -127,7 +127,11 @@ public class RequestProcessing {
                 else if(action.equals("RFORWARD")){
                     contentTypeHeader = SipCommunicator.sipManager.headerFactory.createContentTypeHeader("Unforward", subtype);
                 }
-
+                
+                else if(action.equals("BALANCE")){
+                    contentTypeHeader = SipCommunicator.sipManager.headerFactory.createContentTypeHeader("Balance", subtype);
+                }
+                
                 try {
                     String empty = "";
                     byte[] someArray;
@@ -201,15 +205,28 @@ public class RequestProcessing {
             }*/
 
             String fullContentTypeHeader = response.getHeader(ContentTypeHeader.NAME).toString();
+            String type = fullContentTypeHeader.split("/")[0].trim();
             String subtype = fullContentTypeHeader.split("/")[1].trim();
+            
+          
+            if(!type.equals("Balance")) { 
+            	if (subtype.equals("B")) {
+            		byte [] res = response.getRawContent();
+            		String temp = new String(res);
+            		String [] users = temp.split("/:/");
 
-            if (subtype.equals("B")) {
-                byte [] res = response.getRawContent();
-                String temp = new String(res);
-                String [] users = temp.split("/:/");
+            		SipCommunicator.globalChoices = users;
+            		System.out.println("DEBUG: Wrote to globalChoices!");
+            	}
+            }
+            else {
+            	if (subtype.equals("B")) {
+            		byte [] res = response.getRawContent();
+            		String temp = new String(res);
 
-                SipCommunicator.globalChoices = users;
-                System.out.println("DEBUG: Wrote to globalChoices!");
+            		SipCommunicator.globalBalance = temp;
+            		System.out.println("DEBUG: Wrote to globalBalance!");
+            	}
             }
             /*for(int idx = 0; idx < users.length - 1; idx++){
               SipCommunicator.globalChoices[idx] = users[idx];

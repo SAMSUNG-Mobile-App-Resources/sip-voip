@@ -101,7 +101,8 @@ public class SipCommunicator
     protected SimpleContactList        simpleContactList        = null;
     protected PresenceStatusController presenceStatusController = null;
     public static String[] 		       globalChoices 			= null;
-
+    public static String 		       globalBalance 			= null;
+    
     protected Integer unregistrationLock = new Integer(0);
 
     public SipCommunicator()
