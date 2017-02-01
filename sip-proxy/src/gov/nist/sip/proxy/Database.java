@@ -52,15 +52,17 @@ public class Database {
         if (!ReadFromDisk()) { //will try to read from "db.ser" in sip-proxy directory, remove file if unwanted
             activeDatabase = new HashMap<String, UserInfo>();
 
-            //NOTE: For debugging only, remove later
+            //@NOTE: For debugging only, remove later
 
-            UserInfo user1 = new UserInfo("fellos", "8cb2237d0679ca88db6464eac60da96345513964", "giorgos", "pantavlakopoulos", "george@vlakas.com", UserInfo.Policy.POLICY_A);
-            UserInfo user2 = new UserInfo("piofellos", "8cb2237d0679ca88db6464eac60da96345513964", "marialena", "fragkaki", "maria@elena.com", UserInfo.Policy.POLICY_A);
-            UserInfo user3 = new UserInfo("ipiosfellos", "8cb2237d0679ca88db6464eac60da96345513964", "theos", "panemorfos", "opioomorfos@theos.com", UserInfo.Policy.POLICY_B);
-
+            UserInfo user1 = new UserInfo("gpantaz", "8cb2237d0679ca88db6464eac60da96345513964", "Giorgos", "Pantazopoulos", "georgepantaz94@gmail.com", UserInfo.Policy.POLICY_A);
+            UserInfo user2 = new UserInfo("marialena", "8cb2237d0679ca88db6464eac60da96345513964", "Marialena", "Fragkaki", "marialenanoctis@gmail.com", UserInfo.Policy.POLICY_A);
+            UserInfo user3 = new UserInfo("manos", "8cb2237d0679ca88db6464eac60da96345513964", "Manos", "Theodosis", "manostheodosis@gmail.com", UserInfo.Policy.POLICY_B);
+            UserInfo user4 = new UserInfo("abenetopoulos", "8cb2237d0679ca88db6464eac60da96345513964", "Achilles", "Benetopoulos", "abenetopoulos@gmail.com", UserInfo.Policy.POLICY_C);
+            
             activeDatabase.put(user1.GetUserName(), user1); 
             activeDatabase.put(user2.GetUserName(), user2); 
             activeDatabase.put(user3.GetUserName(), user3);
+            activeDatabase.put(user4.GetUserName(), user4);
         }
     }
 
@@ -203,7 +205,7 @@ public class Database {
         //return null;
     }
 
-    private void WriteToDisk() {
+    public void WriteToDisk() {
         try {
             FileOutputStream fos = new FileOutputStream("db.ser");
             ObjectOutputStream oos = new ObjectOutputStream(fos);

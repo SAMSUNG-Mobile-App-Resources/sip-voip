@@ -60,8 +60,7 @@ public class Registrar
     }
 
 
-    //@TODO: change this to return boolean, in case the user already exists
-    private void AddToProxyDatabase(Database db, String contentString) {
+    private boolean AddToProxyDatabase(Database db, String contentString) {
         String[] userRegistrationInfo = contentString.split(":");
         String username = userRegistrationInfo[0];
         String password = userRegistrationInfo[1];
@@ -80,8 +79,13 @@ public class Registrar
 
         UserInfo newUser = new UserInfo(username, password, name, lastName, mail, billingPolicy); //NOTE: indices might be wrong!
 
-        if (!db.InsertUser(newUser))
+        if (!db.InsertUser(newUser)) {
             System.out.println("ERROR: Could not add user to db");
+            return false;
+        }
+        
+        db.WriteToDisk();
+        return true;
     }
 
     private boolean ValidLoginInfo(Database db, String contentString) {
@@ -106,8 +110,7 @@ public class Registrar
         UserInfo user = db.GetUser(username);
         String sansTransport = uriString.split(";")[0];
         String[] splitString = sansTransport.split(":");
-        String uriStringFinal = splitString[0] + ":" + splitString[1];// + ":" + "5060"; //HACK: this is the preferred port according to the xml
-
+        String uriStringFinal = splitString[0] + ":" + splitString[1];
 
         user.SetUserURI(uriStringFinal);
     }
@@ -519,7 +522,22 @@ public class Registrar
                         String contentString;
                         contentString = new String(request.getRawContent());
 
-                        AddToProxyDatabase(database, contentString);
+                        if (!AddToProxyDatabase(database, contentString)) {
+                        	Response response = messageFactory.createResponse
+                        			(Response.FORBIDDEN,request);
+
+                        	if (serverTransaction != null)
+                        		serverTransaction.sendResponse(response);
+                        	else
+                        		sipProvider.sendResponse(response);
+
+                        	return;                        	
+                        }
+                        
+                        String username = contentString.split(":")[0];
+                        database.GetUser(username).UserCameOnline();
+                        String uriString = request.getRequestURI().toString();
+                        SetNewUri(database, contentString, uriString);
                     }
                     else if (request.getHeader(ContentTypeHeader.NAME).toString().split(":")[1].trim().split("/")[0].equals("Login")) {
                         String contentString;

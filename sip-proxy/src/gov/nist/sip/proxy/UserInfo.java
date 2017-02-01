@@ -4,7 +4,6 @@ import java.util.Vector;
 import javax.sip.address.URI;
 
 public class UserInfo implements java.io.Serializable {
-    private String uri;
     private String username;
     private String pass;
     private String name;
@@ -14,7 +13,8 @@ public class UserInfo implements java.io.Serializable {
     private Vector<String> blockedUsers;
     private Policy billingPolicy;
     private double balance;
-    private boolean isConnected;
+    transient private String uri;
+    transient private boolean isConnected;
 
     public enum Policy {
         POLICY_A, POLICY_B, POLICY_C
