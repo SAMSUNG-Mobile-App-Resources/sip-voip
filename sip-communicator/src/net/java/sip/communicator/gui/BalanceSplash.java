@@ -100,6 +100,7 @@ public class BalanceSplash {
         };
         cancelButton.addActionListener(cancelListener);       
     }
+    
     static void applyBalanceButton_actionPerformed(EventObject evt) {
     	String amount = textArea.getText().trim();
         textArea.setText(null);
@@ -107,19 +108,23 @@ public class BalanceSplash {
 
         try{
         	double d = Double.parseDouble(amount);
-        	RequestProcessing requestProcessing = new RequestProcessing();
-
-        	try {
-        		requestProcessing.processInfo("BALANCE", amount);
-        	} catch (Exception exc) {
+        	
+        	if (d < 0)
         		return;
-        	}
+        	
+        	RequestProcessing requestProcessing = new RequestProcessing();
+       		try {
+       			requestProcessing.processInfo("BALANCE", amount);
+       		} catch (Exception exc) {
+       			return;
+       		}
         }
         catch(NumberFormatException nfe){
         	return;
+        }finally {
+        	SipCommunicator.globalBalance = null;
+        	frame.dispose();
         }
-        SipCommunicator.globalBalance = null;
-        frame.dispose();
     }
 
     static void cancelBalanceButton_actionPerformed(EventObject evt){
