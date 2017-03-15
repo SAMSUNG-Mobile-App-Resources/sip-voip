@@ -1,5 +1,5 @@
 # Extensions to a VoIP application based on the Session Initiation Protocol (SIP)
-This code was developed by a team of four for a class of <b>Software Engineering</b> at <b>National Technical University of Athens</b>. The members of the team are:
+This code was developed by a team of four for a class on <b>Software Engineering</b> at <b>National Technical University of Athens</b>. The members of the team are:
 - <a href="https://github.com/abenetopoulos">Achilles Benetopoulos</a>
 - Marialena Fragkaki
 - Giorgos Pantazopoulos
@@ -11,7 +11,7 @@ Our team was given an existing codebase of a working VoIP application based on t
 - implement a databse where users are stored, so they are able to log in in the future.
 - implement a billing system.
 
-Also included are the Software Requirements Specifications Document (SRS) which describes the functional and non-functional requirements of the system, and the Software Design Document (SDD) which describes the architectural design of the system and a detailed design of the extensions, both in Greek. Do note that these documents were drafted during the class, before the implementation of the system, and therefore may or may not reflect the actual implementation.
+Also included are the Software Requirements Specifications Document (SRS) which describes the functional and non-functional requirements of the system, and the Software Design Document (SDD) which describes the architectural design of the system and a detailed design of the extensions, both in Greek. Do note that these documents were drafted <b>during the class<b>, before the implementation of the system, <b>and therefore may or may not reflect the actual implementation<b>.
 
 ## Extensions outline
 ### Registration
@@ -42,7 +42,7 @@ We created a billing system for the users. During registration, a user chooses a
 There is also a button to add balance to a user's account. The user is billed the appropriate amount when the call ends.
 
 ## Implementation
-The project was solely developed in Java. We made extensive use of the OOP paradigms in Java, and also used extensively Java Swing in order to create the Graphical User Interface (GUI).
+The project was solely developed in Java. We made extensive use of the OOP paradigms in Java, and also used Java Swing in order to create the Graphical User Interface (GUI).
 <br>
 <br>
-Finally, our team used extensively the Session Initiation Protocol (SIP), as defined by the Internet Engineering Task Force (IETF) in <a href="https://www.ietf.org/rfc/rfc3261.txt">RFC 3261</a>, to initiate and manage the connection between users.
+Finally, our team employed the Session Initiation Protocol (SIP), as defined by the Internet Engineering Task Force (IETF) in <a href="https://www.ietf.org/rfc/rfc3261.txt">RFC 3261</a>, to initiate and manage the connection between users.
