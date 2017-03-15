@@ -11,7 +11,7 @@ Our team was given an existing codebase of a working VoIP application based on t
 - implement a databse where users are stored, so they are able to log in in the future.
 - implement a billing system.
 
-Also included are the Software Requirements Specifications Document (SRS) which describes the functional and non-functional requirements of the system, and the Software Design Document (SDD) which describes the architectural design of the system and a detailed design of the extensions, both in Greek. Do note that these documents were drafted <b>during the class<b>, before the implementation of the system, <b>and therefore may or may not reflect the actual implementation<b>.
+Also included are the Software Requirements Specifications Document (SRS) which describes the functional and non-functional requirements of the system, and the Software Design Document (SDD) which describes the architectural design of the system and a detailed design of the extensions, both in Greek. Do note that these documents were drafted <b>during the class</b>, before the implementation of the system, and therefore <b>may or may not reflect the actual implementation</b>.
 
 ## Extensions outline
 ### Registration
